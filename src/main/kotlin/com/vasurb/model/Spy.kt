@@ -1,6 +1,3 @@
 package com.vasurb.model
 
-class Spy(
-    playerId: String
-) {
-}
+data class Spy(val playerId: String)

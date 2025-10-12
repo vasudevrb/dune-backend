@@ -5,8 +5,11 @@ data class Player(
     val name: String,
     val password: String,
     val character: PlayableCharacter,
-    val color: String,
-    val availableAgents: List<Agent>,
-    val resources: Map<Resource, Int>,
-    val combatPower: Int
-)
+    val color: String
+) {
+    var availableAgents: List<Agent> = listOf()
+    var resources: Map<Resource, Int> = mapOf()
+    var combatPower: Int = 0
+    var victoryPoints: Int = 0
+    var factionAlliances: List<Faction> = listOf()
+}
