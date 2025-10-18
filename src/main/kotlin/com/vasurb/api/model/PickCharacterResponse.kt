@@ -1,5 +1,5 @@
 package com.vasurb.api.model
 
-data class CharactersRequestBody(
+data class PickCharacterResponse(
     val playerName: String
 )

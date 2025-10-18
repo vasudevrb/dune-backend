@@ -1,12 +1,11 @@
 package com.vasurb.model
 
 data class Player(
-    val id: String
+    val name: String,
+    val isHost: Boolean = false,
+    var character: PlayableCharacter = PlayableCharacter.MUAD_DIB,
+    var color: Color = Color.RED
 ) {
-    var name: String = ""
-    var character: PlayableCharacter = PlayableCharacter.MUAD_DIB
-    var color: String = "gold"
-
     var availableAgents: List<Agent> = listOf()
     var resources: Map<Resource, Int> = mapOf()
     var combatPower: Int = 0

@@ -1,19 +1,42 @@
 package com.vasurb.api.controller
 
 import com.vasurb.api.model.Character
-import com.vasurb.api.model.CharactersRequestBody
+import com.vasurb.api.model.RequestCharactersBody
 import com.vasurb.api.model.CharactersResponse
+import com.vasurb.api.model.CreateGameResponse
+import com.vasurb.api.model.JoinGameResponse
+import com.vasurb.api.model.PickCharacterBody
+import com.vasurb.api.model.PickCharacterResponse
+import com.vasurb.model.Player
 import com.vasurb.service.GameService
 import com.vasurb.util.Util
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class GameController(val gameService: GameService) {
 
-    @PostMapping("/get-characters")
-    fun getCharacters(@RequestBody body: CharactersRequestBody): CharactersResponse {
+    @GetMapping("/create-game")
+    fun createGame(@RequestParam playerName: String): CreateGameResponse {
+        val hostPlayer = Player(
+            playerName,
+            isHost = true
+        )
+
+        return CreateGameResponse(gameService.createGame(hostPlayer).gameId)
+    }
+
+    @GetMapping("/join-game")
+    fun joinGame(@RequestParam playerName: String, @RequestParam gameId: String): JoinGameResponse {
+        val player = Player(playerName)
+        return JoinGameResponse(gameService.addPlayer(player, gameId).gameId)
+    }
+
+    @PostMapping("/characters")
+    fun characters(@RequestBody body: RequestCharactersBody): CharactersResponse {
         val characters = gameService.presentedCharacters[body.playerName] ?: gameService.availableCharacters
             .shuffled(Util.getDeterministicRandom(body.playerName))
             .take(NUM_PICKABLE_CHARACTERS)
@@ -22,6 +45,16 @@ class GameController(val gameService: GameService) {
         characters.forEach { gameService.availableCharacters.remove(it) }
         gameService.presentedCharacters[body.playerName] = characters
         return CharactersResponse(characters.map { Character(it.name) })
+    }
+
+    @PostMapping("/pick-character")
+    fun pickCharacter(@RequestBody body: PickCharacterBody): PickCharacterResponse {
+        val player = gameService.getPlayer(body.gameId, body.playerName)
+        player.character = body.character
+        player.color = body.color
+
+        gameService.updatePlayer(player, body.gameId)
+        return PickCharacterResponse(player.name)
     }
 
     companion object {
