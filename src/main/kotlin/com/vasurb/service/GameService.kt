@@ -4,6 +4,7 @@ import com.vasurb.api.model.Action
 import com.vasurb.exception.ExpiredGameException
 import com.vasurb.exception.InvalidActionException
 import com.vasurb.model.Board
+import com.vasurb.model.Color
 import com.vasurb.model.Game
 import com.vasurb.model.Location
 import com.vasurb.model.PlayableCharacter
@@ -16,9 +17,6 @@ import java.util.concurrent.ConcurrentHashMap
 class GameService {
 
     private val games = ConcurrentHashMap<String, Game>()
-
-    val availableCharacters = PlayableCharacter.entries.toMutableList()
-    val presentedCharacters = mutableMapOf<String, List<PlayableCharacter>>()
 
     fun takeAction(
         player: Player,
@@ -49,11 +47,7 @@ class GameService {
 
     fun addPlayer(player: Player, gameId: String): Game {
         val game = getGame(gameId)
-        if (game.getPlayerByName(player.name) == null) {
-            game.addOrUpdatePlayer(player.name, player)
-        } else {
-            throw RuntimeException("${player.name} is already assigned to this game")
-        }
+        game.addOrUpdatePlayer(player.name, player)
         return game
     }
 

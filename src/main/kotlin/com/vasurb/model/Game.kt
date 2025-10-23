@@ -6,6 +6,10 @@ data class Game(
     val players: ArrayList<Player> = arrayListOf()
 ) {
 
+    val availableCharacters = PlayableCharacter.entries.toMutableList()
+    val presentedCharacters = mutableMapOf<String, List<PlayableCharacter>>()
+    val availableColors = mutableListOf(Color.RED, Color.BLUE, Color.GOLD, Color.GREEN)
+
     fun getPlayerByName(playerName: String): Player? = players.firstOrNull { it.name == playerName }
 
     fun addOrUpdatePlayer(playerName: String, player: Player) {

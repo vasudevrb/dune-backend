@@ -1,8 +1,18 @@
 package com.vasurb.api.model
 
-class Action {
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.JsonNode
+
+class Action(
+    @JsonProperty("action")
+    val type: Type,
+    val body: JsonNode?
+) {
 
     enum class Type {
+        ADD_TO_GAME,
+        GET_CHARACTER_READY_STATES,
+        START_GAME,
         PLACE_AGENT,
         RECALL_AGENT,
         GET_SWORDMASTER,

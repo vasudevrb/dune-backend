@@ -6,6 +6,5 @@ import com.vasurb.model.PlayableCharacter
 data class PickCharacterBody(
     val gameId: String,
     val playerName: String,
-    val character: PlayableCharacter,
-    val color: Color
+    val characterName: PlayableCharacter
 )
