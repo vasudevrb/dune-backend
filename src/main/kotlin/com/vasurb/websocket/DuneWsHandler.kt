@@ -13,7 +13,7 @@ import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
 
 @Component
-class GameWebSocketHandler(val gameService: GameService): TextWebSocketHandler() {
+class DuneWsHandler(val gameService: GameService): TextWebSocketHandler() {
 
     val mapper = jacksonObjectMapper()
 
