@@ -5,6 +5,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.vasurb.api.model.Action
 import com.vasurb.api.model.Action.Type.*
 import com.vasurb.api.model.ActionResponse
+import com.vasurb.model.Game
+import com.vasurb.model.Player
 import com.vasurb.service.GameService
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
@@ -13,7 +15,7 @@ import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
 
 @Component
-class DuneWsHandler(val gameService: GameService): TextWebSocketHandler() {
+class DuneWsHandler(val gameService: GameService) : TextWebSocketHandler() {
 
     val mapper = jacksonObjectMapper()
 
@@ -25,7 +27,7 @@ class DuneWsHandler(val gameService: GameService): TextWebSocketHandler() {
     override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
         println("Connection closed with id ${session.id}")
 
-        val player = gameService.getGame(getGameId(session)).players
+        val player = getGame(session).players
             .find { it.session?.id == session.id }
 
         player?.session = null
@@ -39,8 +41,7 @@ class DuneWsHandler(val gameService: GameService): TextWebSocketHandler() {
         when (action.type) {
             ADD_TO_GAME -> handleAddToGameAction(session, action)
             GET_CHARACTER_READY_STATES -> handleGetCharacterReadyStates(session)
-            START_GAME -> handleStartGameMessage(session, action)
-
+            START_GAME -> handleStartGameMessage(session)
             else -> println("Unknown action type: ${action.type}")
         }
     }
@@ -76,15 +77,34 @@ class DuneWsHandler(val gameService: GameService): TextWebSocketHandler() {
         player.session = session
     }
 
-    private fun handleStartGameMessage(session: WebSocketSession, action: Action) {
-        val players = gameService.getGame(getGameId(session)).players
-        val response = ActionResponse(START_GAME, null)
-        players.map { it.session }
-            .forEach { it?.sendMessage(TextMessage(mapper.writeValueAsString(response))) }
+    private fun handleStartGameMessage(session: WebSocketSession) {
+        broadcastToEachPlayer(
+            game = getGame(session),
+            message = ActionResponse(START_GAME, null)
+        )
+    }
+
+    private fun broadcastToEachPlayer(
+        gameId: String? = null,
+        players: List<Player>? = null,
+        game: Game? = null,
+        message: Any
+    ) {
+        val allPlayers = when {
+            players != null -> players
+            game != null -> game.players
+            gameId != null -> gameService.getGame(gameId).players
+            else -> throw IllegalArgumentException("Must provide at least one of (gameId, players, game)")
+        }
+
+        allPlayers.map { it.session }
+            .forEach { it?.sendMessage(TextMessage(mapper.writeValueAsString(message))) }
     }
 
     private fun getGameId(session: WebSocketSession): String {
         val path = session.uri?.path
         return path?.substring(path.lastIndexOf('/') + 1) ?: "ERR"
     }
+
+    private fun getGame(session: WebSocketSession) = gameService.getGame(getGameId(session))
 }
