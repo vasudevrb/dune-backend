@@ -9,6 +9,7 @@ import com.vasurb.api.model.PickCharacterBody
 import com.vasurb.api.model.PickCharacterResponse
 import com.vasurb.model.Player
 import com.vasurb.service.GameService
+import com.vasurb.util.CharacterUrlRetriever
 import com.vasurb.util.Util
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
@@ -19,7 +20,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @CrossOrigin(origins = ["http://localhost:5173"])
 @RestController
-class GameController(val gameService: GameService) {
+class GameController(
+    val gameService: GameService,
+    val urlRetriever: CharacterUrlRetriever
+) {
 
     @GetMapping("/create-game")
     fun createGame(@RequestParam playerName: String): CreateGameResponse {
@@ -47,7 +51,7 @@ class GameController(val gameService: GameService) {
         //TODO: Handle when characters is an empty list?
         characters.forEach { game.availableCharacters.remove(it) }
         game.presentedCharacters[body.playerName] = characters
-        return CharactersResponse(characters.map { Character(it) })
+        return CharactersResponse(characters.map { Character(it, urlRetriever.getUrls(it)) })
     }
 
     @PostMapping("/pick-character")

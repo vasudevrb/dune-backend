@@ -5,9 +5,11 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.vasurb.api.model.Action
 import com.vasurb.api.model.Action.Type.*
 import com.vasurb.api.model.ActionResponse
+import com.vasurb.api.model.Character
 import com.vasurb.model.Game
 import com.vasurb.model.Player
 import com.vasurb.service.GameService
+import com.vasurb.util.CharacterUrlRetriever
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
@@ -15,7 +17,10 @@ import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
 
 @Component
-class DuneWsHandler(val gameService: GameService) : TextWebSocketHandler() {
+class DuneWsHandler(
+    val gameService: GameService,
+    val urlRetriever: CharacterUrlRetriever
+    ) : TextWebSocketHandler() {
 
     val mapper = jacksonObjectMapper()
 
@@ -50,11 +55,15 @@ class DuneWsHandler(val gameService: GameService) : TextWebSocketHandler() {
         val players = gameService.getGame(getGameId(session)).players
 
         val responseBody = mapper.createArrayNode().apply {
-            players.forEach {
+            players.forEach { it ->
                 add(mapper.createObjectNode().apply {
                     put("name", it.name)
                     put("color", it.color.name)
                     put("characterName", it.character.readableName)
+                    putArray("characterUrls").apply {
+                        urlRetriever.getUrls(it.character).forEach { url -> add(url)}
+                    }
+                    put("avatarUrl", urlRetriever.getAvatarUrl(it.character))
                     put("status", if (it.session != null) "Ready" else "Not ready")
                 })
             }
