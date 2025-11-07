@@ -1,21 +1,27 @@
 package com.vasurb.util
 
 import com.vasurb.model.PlayableCharacter
-import com.vasurb.model.PlayableCharacter.AMBER_METULLI
-import com.vasurb.model.PlayableCharacter.EMPEROR_SHADDAM
-import com.vasurb.model.PlayableCharacter.FEYD_RAUTHA
-import com.vasurb.model.PlayableCharacter.GURNEY_HALLECK
-import com.vasurb.model.PlayableCharacter.LADY_JESSICA
-import com.vasurb.model.PlayableCharacter.MARGOT_FENRING
-import com.vasurb.model.PlayableCharacter.MUAD_DIB
-import com.vasurb.model.PlayableCharacter.PRINCESS_IRULAN
+import com.vasurb.model.PlayableCharacter.*
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.io.ClassPathResource
+import org.springframework.boot.CommandLineRunner
 import org.springframework.stereotype.Component
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 
 @Component
-class CharacterUrlRetriever (@Value("\${server_url}") val serverUrl: String) {
+class CharacterUrlRetriever(@Value("\${server_url}") val serverUrl: String) : CommandLineRunner {
+    override fun run(vararg args: String?) {
+        PlayableCharacter.entries
+            .map { character ->
+                characterImageUrls[character] = getUrls(character)
+                avatarImageUrl[character] = getAvatarUrl(character)
+            }
+
+        println("Loaded character images: $characterImageUrls")
+    }
+
+    companion object {
+        val characterImageUrls = mutableMapOf<PlayableCharacter, List<String>>()
+        val avatarImageUrl = mutableMapOf<PlayableCharacter, String>()
+    }
 
     fun getUrls(character: PlayableCharacter): List<String> {
         val fileNames: List<String> = when (character) {

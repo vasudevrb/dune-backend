@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.run.BootRun
+
 plugins {
     kotlin("jvm") version "2.2.10"
     kotlin("plugin.spring") version "1.9.25"
@@ -26,6 +28,12 @@ dependencies {
 kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
+tasks {
+    val bootRun by getting(BootRun::class) {
+        jvmArgs=listOf("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
     }
 }
 

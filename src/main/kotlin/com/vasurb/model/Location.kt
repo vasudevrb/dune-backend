@@ -1,12 +1,15 @@
 package com.vasurb.model
 
-import com.vasurb.model.Track.Track.TRACKS
 
 data class Location(
     val name: String,
-    val tracks: List<Track>
+    val id: Int
 ) {
     var agents: ArrayList<Agent> = arrayListOf()
+    var spies: ArrayList<Spy> = arrayListOf()
+
+    data class Agent(val agentId: String, val color: String, val playerName: String)
+    data class Spy(val spyId: String, val color: String, val playerName: String)
 
     companion object Location {
         val LOCATIONS = listOf(
@@ -34,10 +37,7 @@ data class Location(
             "Hagga Basin",
             "Imperial Basin",
         ).map { locationName ->
-            Location(
-                locationName,
-                TRACKS.filter { track -> track.name.contains(locationName) }
-            )
+            Location(locationName, 10)
         }
     }
 }

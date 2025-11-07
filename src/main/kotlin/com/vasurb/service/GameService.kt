@@ -18,23 +18,20 @@ class GameService {
 
     private val games = ConcurrentHashMap<String, Game>()
 
-    fun takeAction(
-        player: Player,
-        board: Board,
-        action: Action
-    ) {
-
-    }
-
     fun sendAgent(
-        player: Player,
-        location: Location
-    ) {
-        if (player.availableAgents.isEmpty()) {
-            throw InvalidActionException("No available agents!")
+        gameId: String,
+        agentId: String,
+        locationId: Int
+    ): Player? {
+        val game = getGame(gameId)
+        val location = game.locations.find { it.id == locationId }
+        val player = game.players.find { player ->  player.agents.any { a -> a.id == agentId } }
+        if (location != null && player != null) {
+            location.agents.add(Location.Agent(agentId, player.color.name, player.name))
+            player.agents.removeAll{ it.id == agentId }
         }
 
-        location.agents.add(player.availableAgents.first())
+        return player
     }
 
     fun createGame(player: Player): Game {

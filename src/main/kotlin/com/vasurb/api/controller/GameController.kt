@@ -7,9 +7,10 @@ import com.vasurb.api.model.CreateGameResponse
 import com.vasurb.api.model.JoinGameResponse
 import com.vasurb.api.model.PickCharacterBody
 import com.vasurb.api.model.PickCharacterResponse
+import com.vasurb.model.CharacterModel
+import com.vasurb.model.Color
 import com.vasurb.model.Player
 import com.vasurb.service.GameService
-import com.vasurb.util.CharacterUrlRetriever
 import com.vasurb.util.Util
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,16 +21,14 @@ import org.springframework.web.bind.annotation.RestController
 
 @CrossOrigin(origins = ["http://localhost:5173"])
 @RestController
-class GameController(
-    val gameService: GameService,
-    val urlRetriever: CharacterUrlRetriever
-) {
+class GameController(val gameService: GameService) {
 
     @GetMapping("/create-game")
     fun createGame(@RequestParam playerName: String): CreateGameResponse {
         val hostPlayer = Player(
             playerName,
-            isHost = true
+            isHost = true,
+            color = Color.GOLD
         )
 
         return CreateGameResponse(gameService.createGame(hostPlayer).gameId)
@@ -37,7 +36,10 @@ class GameController(
 
     @GetMapping("/join-game")
     fun joinGame(@RequestParam playerName: String, @RequestParam gameId: String): JoinGameResponse {
-        val player = Player(playerName)
+        val game = gameService.getGame(gameId)
+        val color = game.availableColors.random()
+        val player = Player(playerName, color = color)
+        game.availableColors.remove(color)
         return JoinGameResponse(gameService.addPlayer(player, gameId).gameId)
     }
 
@@ -51,15 +53,14 @@ class GameController(
         //TODO: Handle when characters is an empty list?
         characters.forEach { game.availableCharacters.remove(it) }
         game.presentedCharacters[body.playerName] = characters
-        return CharactersResponse(characters.map { Character(it, urlRetriever.getUrls(it)) })
+        return CharactersResponse(characters.map { Character(it, CharacterModel.get(it).urls) })
     }
 
     @PostMapping("/pick-character")
     fun pickCharacter(@RequestBody body: PickCharacterBody): PickCharacterResponse {
         val game = gameService.getGame(body.gameId)
         val player = gameService.getPlayer(body.gameId, body.playerName)
-        player.character = body.characterName
-        player.color = game.availableColors.random()
+        player.character = CharacterModel.get(body.characterName)
 
         game.availableColors.remove(player.color)
 

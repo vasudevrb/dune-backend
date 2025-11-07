@@ -1,5 +1,3 @@
 package com.vasurb.model
 
-class Agent(
-    playerId: String
-)
+data class Agent(val id: String)

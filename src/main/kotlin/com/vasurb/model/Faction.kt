@@ -1,5 +1,5 @@
 package com.vasurb.model
 
 enum class Faction {
-    FREMEN, BENE_GESSERIT, SPACING_GUILD, EMPEROR
+    Fremen, BeneGesserit, SpacingGuild, Emperor
 }

@@ -1,15 +1,16 @@
 package com.vasurb.websocket
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.vasurb.api.model.Action
 import com.vasurb.api.model.Action.Type.*
-import com.vasurb.api.model.ActionResponse
-import com.vasurb.api.model.Character
+import com.vasurb.api.model.ws_request.PlaceAgent
+import com.vasurb.api.model.ws_request.WSActionRequest
+import com.vasurb.api.model.ws_request.WSActionResponse
 import com.vasurb.model.Game
 import com.vasurb.model.Player
 import com.vasurb.service.GameService
-import com.vasurb.util.CharacterUrlRetriever
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
@@ -17,10 +18,7 @@ import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
 
 @Component
-class DuneWsHandler(
-    val gameService: GameService,
-    val urlRetriever: CharacterUrlRetriever
-    ) : TextWebSocketHandler() {
+class DuneWsHandler(val gameService: GameService) : TextWebSocketHandler() {
 
     val mapper = jacksonObjectMapper()
 
@@ -47,6 +45,7 @@ class DuneWsHandler(
             ADD_TO_GAME -> handleAddToGameAction(session, action)
             GET_CHARACTER_READY_STATES -> handleGetCharacterReadyStates(session)
             START_GAME -> handleStartGameMessage(session)
+            PLACE_AGENT -> handlePlaceAgent(session, message)
             else -> println("Unknown action type: ${action.type}")
         }
     }
@@ -55,22 +54,22 @@ class DuneWsHandler(
         val players = gameService.getGame(getGameId(session)).players
 
         val responseBody = mapper.createArrayNode().apply {
-            players.forEach { it ->
+            players.forEach {
                 add(mapper.createObjectNode().apply {
                     put("name", it.name)
                     put("color", it.color.name)
-                    put("characterName", it.character.readableName)
+                    put("characterName", it.character.name)
                     putArray("characterUrls").apply {
-                        urlRetriever.getUrls(it.character).forEach { url -> add(url)}
+                        it.character.urls.forEach { url -> add(url)}
                     }
-                    put("avatarUrl", urlRetriever.getAvatarUrl(it.character))
+                    put("avatarUrl", it.character.avatarUrl)
                     put("status", if (it.session != null) "Ready" else "Not ready")
                 })
             }
         }
 
-        val response = ActionResponse(
-            GET_CHARACTER_READY_STATES,
+        val response = WSActionResponse(
+            WSActionResponse.Type.GET_CHARACTER_READY_STATES,
             responseBody
         )
 
@@ -87,17 +86,45 @@ class DuneWsHandler(
     }
 
     private fun handleStartGameMessage(session: WebSocketSession) {
-        broadcastToEachPlayer(
+        broadcastToPlayers(
             game = getGame(session),
-            message = ActionResponse(START_GAME, null)
+            message = WSActionResponse(WSActionResponse.Type.START_GAME, null)
         )
     }
 
-    private fun broadcastToEachPlayer(
+    private fun handlePlaceAgent(session: WebSocketSession, message: TextMessage) {
+        val data = mapper.readValue(
+            message.payload,
+            object : TypeReference<WSActionRequest<PlaceAgent>>() {}
+        ) ?: throw RuntimeException("Incorrect data")
+
+        val gameId = getGameId(session)
+        val game = gameService.getGame(gameId)
+        val otherPlayers = game.players.filterNot { it.session?.id == session.id }
+
+        val res = gameService.sendAgent(gameId, data.body.agentId, data.body.locationId)
+        broadcastToPlayers(
+            players = otherPlayers,
+            message = WSActionResponse(
+                WSActionResponse.Type.UPDATE_PLAYER,
+                mapper.valueToTree(res)
+            )
+        )
+
+        broadcastToPlayers(
+            players = otherPlayers,
+            message = WSActionResponse(
+                WSActionResponse.Type.UPDATE_LOCATION,
+                mapper.valueToTree(game.locations[0])
+            )
+        )
+    }
+
+    private fun broadcastToPlayers(
         gameId: String? = null,
         players: List<Player>? = null,
         game: Game? = null,
-        message: Any
+        message: WSActionResponse
     ) {
         val allPlayers = when {
             players != null -> players
@@ -106,8 +133,10 @@ class DuneWsHandler(
             else -> throw IllegalArgumentException("Must provide at least one of (gameId, players, game)")
         }
 
+        val msgJson = mapper.writeValueAsString(message)
+        println("Broadcasting message: ${msgJson}")
         allPlayers.map { it.session }
-            .forEach { it?.sendMessage(TextMessage(mapper.writeValueAsString(message))) }
+            .forEach { it?.sendMessage(TextMessage(msgJson)) }
     }
 
     private fun getGameId(session: WebSocketSession): String {
