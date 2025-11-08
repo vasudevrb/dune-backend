@@ -44,5 +44,5 @@ data class Player(
     var combat: CombatModel = CombatModel()
 
     @JsonIgnore
-    var session: WebSocketSession? = null
+    var readyState  : String? = null
 }

@@ -1,5 +1,9 @@
 package com.vasurb.util
 
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.treeToValue
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.ZoneOffset
@@ -18,5 +22,12 @@ object Util {
         val hashInt = hashBytes.fold(0L) { acc, byte -> (acc shl 8) + (byte.toInt() and 0xff) }
 
         return Random(hashInt)
+    }
+
+    inline fun <reified T> ObjectMapper.getAs(node: JsonNode?): T {
+        return convertValue(
+            node,
+            object : TypeReference<T>() {}
+        )
     }
 }
