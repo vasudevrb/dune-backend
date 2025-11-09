@@ -1,7 +1,6 @@
 package com.vasurb.model
 
 interface Card {
-    val id: Int
     val fileName: String
     val type: Card.Type
 

@@ -16,8 +16,16 @@ data class Game(
     var firstPlayer: String? = null
 
     @JsonIgnore
-    val availableObjectives = arrayListOf(DesertMouse, Ornithopter, Crysknife)
+    val imperiumCards: Deck<ImperiumCard> = Deck(arrayListOf())
+    @JsonIgnore
+    val intrigueCards: Deck<IntrigueCard> = Deck(arrayListOf())
+    @JsonIgnore
+    val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.getConflicts())
 
+    val imperiumRow: ArrayList<ImperiumCard> = imperiumCards.draw(5)
+
+    @JsonIgnore
+    val availableObjectives = arrayListOf(DesertMouse, Ornithopter, Crysknife)
     @JsonIgnore
     val availableCharacters = PlayableCharacter.entries.toMutableList()
     @JsonIgnore

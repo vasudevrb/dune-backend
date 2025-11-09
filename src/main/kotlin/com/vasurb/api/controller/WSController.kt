@@ -109,6 +109,15 @@ class WSController(
     private fun getStartGame(gameId: String) {
         val game = gameService.getGame(gameId)
         game.isStarted = true
+
+        val desertMousePlayers = game.players.filter { it.objectives.contains(DesertMouse) }
+        val firstPlayer = desertMousePlayers.random()
+        game.players.remove(firstPlayer)
+        game.players.add(0, firstPlayer)
+
+        game.firstPlayer = firstPlayer.name
+        game.currentPlayer = firstPlayer.name
+
         simpMessagingTemplate.convertAndSend(
             "/topic/game/$gameId",
             WSActionResponse(WSActionResponse.Type.START_GAME, mapper.valueToTree(game))

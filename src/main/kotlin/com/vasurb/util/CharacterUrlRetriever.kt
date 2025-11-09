@@ -4,6 +4,7 @@ import com.vasurb.model.PlayableCharacter
 import com.vasurb.model.PlayableCharacter.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.stereotype.Component
 
 @Component

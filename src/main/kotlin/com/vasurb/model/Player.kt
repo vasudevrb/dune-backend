@@ -51,6 +51,13 @@ data class Player(
     var makerHookUnlocked: Boolean = false
     var combat: CombatModel = CombatModel()
 
+    val discardedCards: Deck<AgentCard> = Deck(arrayListOf())
+    val drawPile: Deck<AgentCard> = Deck(StarterCard.getAll(), discardedCards)
+    val inHandCards: ArrayList<AgentCard> = drawPile.draw(5)
+    val inPlayCards: ArrayList<AgentCard> = arrayListOf()
+
+    val intrigueCards: ArrayList<IntrigueCard> = arrayListOf()
+
     @JsonIgnore
     var readyState: String? = null
 }

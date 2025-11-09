@@ -1,5 +1,8 @@
 package com.vasurb.model
 
+import com.vasurb.util.CardsUrlRetriever
+import com.vasurb.util.CardsUrlRetriever.Key
+
 /**
  * 1
  * Smuggler's Harvester: 2
@@ -71,9 +74,18 @@ package com.vasurb.model
  * Overthrow: 1
  */
 data class ImperiumCard(
-    override val id: Int,
     override val fileName: String
-) : Card {
+) : AgentCard {
 
     override val type: Card.Type = Card.Type.IMPERIUM
+
+    companion object {
+        fun getAll(): ArrayList<AgentCard> {
+            val cards = CardsUrlRetriever.cardImageUrls[Key(Card.Type.IMPERIUM)]
+                ?.map { url -> ImperiumCard(url) }
+                ?.toMutableList() as ArrayList<ImperiumCard>
+
+            return ArrayList(cards)
+        }
+    }
 }
