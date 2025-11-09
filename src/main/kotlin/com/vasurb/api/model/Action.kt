@@ -13,6 +13,7 @@ class Action(
         ADD_TO_GAME,
         GET_CHARACTER_READY_STATES,
         START_GAME,
+        RESUME_GAME,
         PLACE_AGENT,
         RECALL_AGENT,
         GET_SWORDMASTER,

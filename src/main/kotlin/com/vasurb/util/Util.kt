@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.treeToValue
+import org.springframework.messaging.simp.SimpMessagingTemplate
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.ZoneOffset
@@ -29,5 +30,24 @@ object Util {
             node,
             object : TypeReference<T>() {}
         )
+    }
+
+    fun SimpMessagingTemplate.convertAndSendToUser(user: String, destination: String, payload: Any?) {
+        if (payload == null) {
+            println("Given payload is null. Not sending anything")
+            return
+        }
+
+        convertAndSendToUser(
+            user,
+            destination,
+            payload
+        )
+    }
+
+    fun <T> ArrayList<T>.getRandomAndRemove(): T {
+        val polled = random()
+        remove(polled)
+        return polled
     }
 }

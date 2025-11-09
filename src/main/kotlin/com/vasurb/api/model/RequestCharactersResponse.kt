@@ -12,5 +12,6 @@ data class CharactersResponse(val characters: List<Character>) {
 
 data class Character(
     val characterName: PlayableCharacter,
-    val urls: List<String>
+    val urls: List<String>,
+    val avatarUrl: String
 )

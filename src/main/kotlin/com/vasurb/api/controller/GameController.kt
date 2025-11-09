@@ -37,10 +37,15 @@ class GameController(val gameService: GameService) {
     @GetMapping("/join-game")
     fun joinGame(@RequestParam playerName: String, @RequestParam gameId: String): JoinGameResponse {
         val game = gameService.getGame(gameId)
-        val color = game.availableColors.random()
-        val player = Player(playerName, color = color)
-        game.availableColors.remove(color)
-        return JoinGameResponse(gameService.addPlayer(player, gameId).gameId)
+        if (game.getPlayerByName(playerName) != null) {
+            //Player already added to game
+            return JoinGameResponse(gameId, true)
+        } else {
+            val color = game.availableColors.random()
+            val player = Player(playerName, color = color)
+            game.availableColors.remove(color)
+            return JoinGameResponse(gameService.addPlayer(player, gameId).gameId)
+        }
     }
 
     @PostMapping("/characters")
@@ -53,7 +58,7 @@ class GameController(val gameService: GameService) {
         //TODO: Handle when characters is an empty list?
         characters.forEach { game.availableCharacters.remove(it) }
         game.presentedCharacters[body.playerName] = characters
-        return CharactersResponse(characters.map { Character(it, CharacterModel.get(it).urls) })
+        return CharactersResponse(characters.map { Character(it, CharacterModel.get(it).urls, CharacterModel.get(it).avatarUrl) })
     }
 
     @PostMapping("/pick-character")

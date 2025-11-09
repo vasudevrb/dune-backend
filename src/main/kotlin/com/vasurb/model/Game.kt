@@ -1,5 +1,8 @@
 package com.vasurb.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.vasurb.model.Objective.*
+
 data class Game(
     val gameId: String,
     val locations: List<Location> = listOf(
@@ -8,11 +11,18 @@ data class Game(
     val players: ArrayList<Player> = arrayListOf()
 ) {
 
+    var isStarted = false
     var currentPlayer: String? = null
     var firstPlayer: String? = null
 
+    @JsonIgnore
+    val availableObjectives = arrayListOf(DesertMouse, Ornithopter, Crysknife)
+
+    @JsonIgnore
     val availableCharacters = PlayableCharacter.entries.toMutableList()
+    @JsonIgnore
     val presentedCharacters = mutableMapOf<String, List<PlayableCharacter>>()
+    @JsonIgnore
     val availableColors = mutableListOf(Color.RED, Color.BLUE, Color.GREEN)
 
     fun getPlayerByName(playerName: String): Player? = players.firstOrNull { it.name == playerName }

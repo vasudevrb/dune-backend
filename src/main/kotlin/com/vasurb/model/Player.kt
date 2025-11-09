@@ -2,7 +2,6 @@ package com.vasurb.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.springframework.web.socket.WebSocketSession
 
 data class Player(
     val name: String,
@@ -21,8 +20,8 @@ data class Player(
     @get:JsonProperty
     val spies = arrayListOf(
     Spy("spy-${name}#1"),
-    Spy("spy-${name}#1"),
-    Spy("spy-${name}#1"),
+    Spy("spy-${name}#2"),
+    Spy("spy-${name}#3"),
     )
     @get:JsonProperty
     val controlFlags = arrayListOf(
@@ -34,15 +33,24 @@ data class Player(
     @get:JsonProperty
     var victoryPoints: Int = 0
     @get:JsonProperty
-    var objectives: List<Objective> = listOf()
+    var objectives: ArrayList<Objective> = arrayListOf()
     var numCards: NumCardsModel = NumCardsModel()
-    var resources: Map<Resource, Int> = mapOf()
-    var factionInfluences: Map<Faction, Int> = mapOf()
+    var resources: Map<Resource, Int> = mapOf(
+        Resource.water to 1,
+        Resource.spice to 0,
+        Resource.solari to 0,
+    )
+    var factionInfluences: Map<Faction, Int> = mapOf(
+        Faction.Fremen to 0,
+        Faction.BeneGesserit to 0,
+        Faction.SpacingGuild to 0,
+        Faction.Emperor to 0,
+    )
 
     var swordmasterUnlocked: Boolean = false
     var makerHookUnlocked: Boolean = false
     var combat: CombatModel = CombatModel()
 
     @JsonIgnore
-    var readyState  : String? = null
+    var readyState: String? = null
 }

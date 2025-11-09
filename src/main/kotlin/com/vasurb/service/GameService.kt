@@ -5,7 +5,6 @@ import com.vasurb.model.Game
 import com.vasurb.model.Location
 import com.vasurb.model.Player
 import org.springframework.stereotype.Component
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 @Component
@@ -17,7 +16,7 @@ class GameService {
         gameId: String,
         agentId: String,
         locationId: Int
-    ): Player? {
+    ) {
         val game = getGame(gameId)
         val location = game.locations.find { it.id == locationId }
         val player = game.players.find { player -> player.agents.any { a -> a.id == agentId } }
@@ -25,12 +24,10 @@ class GameService {
             location.agents.add(Location.Agent(agentId, player.color.name, player.name))
             player.agents.removeAll { it.id == agentId }
         }
-
-        return player
     }
 
     fun createGame(player: Player): Game {
-        val gameId = UUID.randomUUID().toString()
+        val gameId = "dune${games.size + 1}"
         val game = Game(gameId)
         games[gameId] = game
         game.addOrUpdatePlayer(player.name, player)
