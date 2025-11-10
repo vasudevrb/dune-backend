@@ -25,21 +25,20 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
                 if (cardType == Card.Type.CONFLICT) {
                     ConflictCard.ConflictType.entries
                         .map { conflictLevel ->
-                            val classPathDir = "classpath:/static/${getConflictDirectory(conflictLevel)}/*"
-                            cardImageUrls[Key(cardType, conflictLevel)] = getUrls(classPathDir, resolver)
+                            cardImageUrls[Key(cardType, conflictLevel)] = getUrls(getConflictDirectory(conflictLevel), resolver)
                         }
 
                 } else {
-                    val classPathDir = "classpath:/static/${getDirectoryByCardType(cardType)}/*"
-                    cardImageUrls[Key(cardType)] = getUrls(classPathDir, resolver)
+                    cardImageUrls[Key(cardType)] = getUrls(getDirectoryByCardType(cardType), resolver)
                 }
             }
     }
 
     fun getUrls(directory: String, resolver: PathMatchingResourcePatternResolver): List<String> {
-        return resolver.getResources(directory)
+        val classPathDir = "classpath:/static/${directory}/*"
+        return resolver.getResources(classPathDir)
             .filter { it.exists() }
-            .map { serverUrl + it.filename }
+            .map { "${serverUrl}/${directory}/${it.filename}" }
     }
 
     fun getDirectoryByCardType(cardType: Card.Type): String {

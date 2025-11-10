@@ -13,25 +13,28 @@ data class Player(
 
     @get:JsonProperty
     val agents = arrayListOf(
-    Agent("agent-${name}#1"),
-    Agent("agent-${name}#2"),
-    Agent("agent-${name}#3"),
+        Agent("agent-${name}#1"),
+        Agent("agent-${name}#2"),
+        Agent("agent-${name}#3"),
     )
+
     @get:JsonProperty
     val spies = arrayListOf(
-    Spy("spy-${name}#1"),
-    Spy("spy-${name}#2"),
-    Spy("spy-${name}#3"),
+        Spy("spy-${name}#1"),
+        Spy("spy-${name}#2"),
+        Spy("spy-${name}#3"),
     )
+
     @get:JsonProperty
     val controlFlags = arrayListOf(
-    ControlFlag("control_flag-${name}#1"),
-    ControlFlag("control_flag-${name}#2"),
-    ControlFlag("control_flag-${name}#3"),
+        ControlFlag("control_flag-${name}#1"),
+        ControlFlag("control_flag-${name}#2"),
+        ControlFlag("control_flag-${name}#3"),
     )
 
     @get:JsonProperty
     var victoryPoints: Int = 0
+
     @get:JsonProperty
     var objectives: ArrayList<Objective> = arrayListOf()
     var numCards: NumCardsModel = NumCardsModel()
@@ -51,13 +54,17 @@ data class Player(
     var makerHookUnlocked: Boolean = false
     var combat: CombatModel = CombatModel()
 
-    val discardedCards: Deck<AgentCard> = Deck(arrayListOf())
-    val drawPile: Deck<AgentCard> = Deck(StarterCard.getAll(), discardedCards)
-    val inHandCards: ArrayList<AgentCard> = drawPile.draw(5)
-    val inPlayCards: ArrayList<AgentCard> = arrayListOf()
-
-    val intrigueCards: ArrayList<IntrigueCard> = arrayListOf()
+    val private: Private = Private()
 
     @JsonIgnore
     var readyState: String? = null
+
+    data class Private(
+        val discardedCards: ArrayList<AgentCard> = arrayListOf(),
+        @JsonIgnore
+        val drawPile: Deck<AgentCard> = Deck(StarterCard.getAll(), discardedCards),
+        val inHandCards: ArrayList<AgentCard> = drawPile.draw(5),
+        val inPlayCards: ArrayList<AgentCard> = arrayListOf(),
+        val intrigueCards: ArrayList<IntrigueCard> = arrayListOf()
+    )
 }

@@ -3,6 +3,8 @@ package com.vasurb.util
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import java.security.MessageDigest
@@ -30,6 +32,27 @@ object Util {
             node,
             object : TypeReference<T>() {}
         )
+    }
+
+    inline fun <reified T> ObjectMapper.toTree(obj: Any?, includePrivate: Boolean = false): T {
+        val tree = convertValue(
+            obj,
+            object : TypeReference<T>() {}
+        )
+
+        if (!includePrivate && tree is ObjectNode) {
+            tree.remove("private")
+            if (tree.has("players") && tree["players"] is ArrayNode) {
+                val playersNode = tree["players"] as ArrayNode
+                for (playerNode in playersNode) {
+                    if (playerNode is ObjectNode) {
+                        playerNode.remove("private")
+                    }
+                }
+            }
+        }
+
+        return tree
     }
 
     fun SimpMessagingTemplate.convertAndSendToUser(user: String, destination: String, payload: Any?) {

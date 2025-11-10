@@ -1,6 +1,6 @@
 package com.vasurb.model
 
 interface AgentCard: Card {
-    override val fileName: String
+    override val url: String
     override val type: Card.Type
 }

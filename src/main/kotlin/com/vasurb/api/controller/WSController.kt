@@ -17,6 +17,7 @@ import com.vasurb.service.GameService
 import com.vasurb.util.Util.convertAndSendToUser
 import com.vasurb.util.Util.getAs
 import com.vasurb.util.Util.getRandomAndRemove
+import com.vasurb.util.Util.toTree
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.simp.SimpMessagingTemplate
@@ -120,8 +121,20 @@ class WSController(
 
         simpMessagingTemplate.convertAndSend(
             "/topic/game/$gameId",
-            WSActionResponse(WSActionResponse.Type.START_GAME, mapper.valueToTree(game))
+            WSActionResponse(WSActionResponse.Type.START_GAME, mapper.toTree(game))
         )
+
+        game.players.forEach {
+            val response = WSActionResponse(
+                WSActionResponse.Type.UPDATE_PLAYER,
+                mapper.toTree(it, includePrivate = true)
+            )
+            simpMessagingTemplate.convertAndSendToUser(
+                it.name,
+                "/queue/game/${gameId}",
+                response
+            )
+        }
     }
 
     private fun getResumeGame(gameId: String, playerName: String) {
@@ -129,7 +142,7 @@ class WSController(
         simpMessagingTemplate.convertAndSendToUser(
             playerName,
             "/queue/game/$gameId",
-            WSActionResponse(WSActionResponse.Type.START_GAME, mapper.valueToTree(game))
+            WSActionResponse(WSActionResponse.Type.START_GAME, mapper.toTree(game))
         )
     }
 
@@ -146,11 +159,11 @@ class WSController(
         gameService.sendAgent(gameId, body.agentId, body.locationId)
         val updatedPlayer = game.players
             .find { it.name == playerName }
-            ?.let { WSActionResponse(WSActionResponse.Type.UPDATE_PLAYER, mapper.valueToTree(it)) }
+            ?.let { WSActionResponse(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(it)) }
 
         val updatedLocation = game.locations
             .find { it.id == body.locationId }
-            ?.let { WSActionResponse(WSActionResponse.Type.UPDATE_LOCATION, mapper.valueToTree(it)) }
+            ?.let { WSActionResponse(WSActionResponse.Type.UPDATE_LOCATION, mapper.toTree(it)) }
 
         otherPlayers.forEach {
             simpMessagingTemplate.convertAndSendToUser(it.name, "/queue/game/${gameId}", updatedPlayer)

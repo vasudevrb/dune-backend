@@ -16,7 +16,7 @@ data class Game(
     var firstPlayer: String? = null
 
     @JsonIgnore
-    val imperiumCards: Deck<ImperiumCard> = Deck(arrayListOf())
+    val imperiumCards: Deck<ImperiumCard> = Deck(ImperiumCard.getAll())
     @JsonIgnore
     val intrigueCards: Deck<IntrigueCard> = Deck(arrayListOf())
     @JsonIgnore

@@ -4,7 +4,7 @@ import com.vasurb.util.CardsUrlRetriever
 import com.vasurb.util.CardsUrlRetriever.Key
 
 data class IntrigueCard(
-    override val fileName: String
+    override val url: String
 ): Card {
     override val type: Card.Type = Card.Type.INTRIGUE
 

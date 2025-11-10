@@ -74,13 +74,13 @@ import com.vasurb.util.CardsUrlRetriever.Key
  * Overthrow: 1
  */
 data class ImperiumCard(
-    override val fileName: String
+    override val url: String
 ) : AgentCard {
 
     override val type: Card.Type = Card.Type.IMPERIUM
 
     companion object {
-        fun getAll(): ArrayList<AgentCard> {
+        fun getAll(): ArrayList<ImperiumCard> {
             val cards = CardsUrlRetriever.cardImageUrls[Key(Card.Type.IMPERIUM)]
                 ?.map { url -> ImperiumCard(url) }
                 ?.toMutableList() as ArrayList<ImperiumCard>
