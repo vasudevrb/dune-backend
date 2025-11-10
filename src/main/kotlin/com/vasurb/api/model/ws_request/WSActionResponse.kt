@@ -12,6 +12,9 @@ data class WSActionResponse(
         START_GAME,
         GET_CHARACTER_READY_STATES,
         UPDATE_PLAYER,
-        UPDATE_LOCATION
+        UPDATE_LOCATION,
+        CARD_USED,
     }
+
+    data class CardUsed(val url: String, val playerName: String)
 }

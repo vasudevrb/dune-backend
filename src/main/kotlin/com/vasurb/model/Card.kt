@@ -7,4 +7,8 @@ interface Card {
     enum class Type {
         IMPERIUM, INTRIGUE, CONFLICT, STARTER
     }
+
+    enum class Source {
+        HAND, PLAY, DISCARD, INTRIGUES
+    }
 }

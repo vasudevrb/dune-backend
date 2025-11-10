@@ -14,6 +14,7 @@ class Action(
         GET_CHARACTER_READY_STATES,
         START_GAME,
         RESUME_GAME,
+        USE_CARD,
         PLACE_AGENT,
         RECALL_AGENT,
         GET_SWORDMASTER,

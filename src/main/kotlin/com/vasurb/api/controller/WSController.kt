@@ -6,9 +6,15 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.vasurb.api.model.Action.Type.*
 import com.vasurb.api.model.ws_request.AddToGame
 import com.vasurb.api.model.ws_request.PlaceAgent
+import com.vasurb.api.model.ws_request.UseCard
 import com.vasurb.api.model.ws_request.WSActionRequest
 import com.vasurb.api.model.ws_request.WSActionResponse
+import com.vasurb.api.model.ws_request.WSActionResponse.Type.CARD_USED
+import com.vasurb.api.model.ws_request.WSActionResponse.Type.UPDATE_PLAYER
+import com.vasurb.model.AgentCard
+import com.vasurb.model.Card
 import com.vasurb.model.Game
+import com.vasurb.model.IntrigueCard
 import com.vasurb.model.Objective.Crysknife
 import com.vasurb.model.Objective.DesertMouse
 import com.vasurb.model.Objective.Ornithopter
@@ -49,6 +55,7 @@ class WSController(
             GET_CHARACTER_READY_STATES -> getPlayerReadyStates(gameId)
             START_GAME -> getStartGame(gameId)
             RESUME_GAME -> getResumeGame(gameId, playerName)
+            USE_CARD -> handleUseCard(gameId, playerName, action)
             PLACE_AGENT -> handlePlaceAgent(playerName, gameId, action)
             else -> println("Unknown action type: ${action.type}")
         }
@@ -126,7 +133,7 @@ class WSController(
 
         game.players.forEach {
             val response = WSActionResponse(
-                WSActionResponse.Type.UPDATE_PLAYER,
+                UPDATE_PLAYER,
                 mapper.toTree(it, includePrivate = true)
             )
             simpMessagingTemplate.convertAndSendToUser(
@@ -142,8 +149,54 @@ class WSController(
         simpMessagingTemplate.convertAndSendToUser(
             playerName,
             "/queue/game/$gameId",
-            WSActionResponse(WSActionResponse.Type.START_GAME, mapper.toTree(game))
+            WSActionResponse(WSActionResponse.Type.START_GAME, mapper.toTree(game, includePrivate = true))
         )
+    }
+
+    private fun handleUseCard(
+        gameId: String,
+        playerName: String,
+        action: WSActionRequest
+    ) {
+        val body = mapper.getAs<UseCard>(action.body)
+        val game = gameService.getGame(gameId)
+        val player = game.players.find { it.name == playerName } ?: return
+        val sourceList = when(body.source) {
+            Card.Source.HAND -> player.private.inHandCards
+            Card.Source.PLAY -> player.private.inPlayCards
+            Card.Source.DISCARD -> player.private.discardedCards
+            Card.Source.INTRIGUES -> player.private.intrigueCards
+        }
+
+        val removable = sourceList.find { it.url == body.url }
+
+        removable?.let {
+            sourceList.remove(it)
+            if (it is AgentCard) {
+                when(body.source) {
+                    Card.Source.HAND -> player.private.inPlayCards.add(it)
+                    Card.Source.PLAY -> player.private.inHandCards.add(it)
+                    Card.Source.DISCARD -> player.private.inHandCards.add(it)
+                    else -> {}
+                }
+            } else if (it is IntrigueCard) {
+                when(body.source) {
+                    Card.Source.INTRIGUES -> player.private.usedIntrigues.add(it)
+                    else -> {}
+                }
+            }
+
+            simpMessagingTemplate.convertAndSendToUser(
+                playerName,
+                "/queue/game/${gameId}",
+                WSActionResponse(UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+
+            simpMessagingTemplate.convertAndSend(
+                "/topic/game/$gameId",
+                WSActionResponse(CARD_USED, mapper.toTree(WSActionResponse.CardUsed(body.url, playerName)))
+            )
+        }
     }
 
     private fun handlePlaceAgent(
@@ -159,7 +212,7 @@ class WSController(
         gameService.sendAgent(gameId, body.agentId, body.locationId)
         val updatedPlayer = game.players
             .find { it.name == playerName }
-            ?.let { WSActionResponse(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(it)) }
+            ?.let { WSActionResponse(UPDATE_PLAYER, mapper.toTree(it)) }
 
         val updatedLocation = game.locations
             .find { it.id == body.locationId }
