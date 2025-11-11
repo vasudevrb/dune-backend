@@ -9,6 +9,6 @@ interface Card {
     }
 
     enum class Source {
-        HAND, PLAY, DISCARD, INTRIGUES
+        HAND, PLAY, DISCARD, INTRIGUE
     }
 }

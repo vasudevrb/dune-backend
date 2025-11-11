@@ -7,7 +7,7 @@ data class PlaceAgent(
     val locationId: Int
 )
 
-data class UseCard(
+data class CardAction(
     val url: String,
     val source: Card.Source
 )

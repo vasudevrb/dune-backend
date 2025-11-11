@@ -3,12 +3,14 @@ package com.vasurb.api.controller
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.vasurb.api.model.Action
 import com.vasurb.api.model.Action.Type.*
 import com.vasurb.api.model.ws_request.AddToGame
 import com.vasurb.api.model.ws_request.PlaceAgent
-import com.vasurb.api.model.ws_request.UseCard
+import com.vasurb.api.model.ws_request.CardAction
 import com.vasurb.api.model.ws_request.WSActionRequest
 import com.vasurb.api.model.ws_request.WSActionResponse
+import com.vasurb.api.model.ws_request.WSActionResponse.CardUsed
 import com.vasurb.api.model.ws_request.WSActionResponse.Type.CARD_USED
 import com.vasurb.api.model.ws_request.WSActionResponse.Type.UPDATE_PLAYER
 import com.vasurb.model.AgentCard
@@ -55,7 +57,7 @@ class WSController(
             GET_CHARACTER_READY_STATES -> getPlayerReadyStates(gameId)
             START_GAME -> getStartGame(gameId)
             RESUME_GAME -> getResumeGame(gameId, playerName)
-            USE_CARD -> handleUseCard(gameId, playerName, action)
+            USE_CARD, DISCARD_CARD, TRASH_CARD -> handleCardAction(gameId, playerName, action)
             PLACE_AGENT -> handlePlaceAgent(playerName, gameId, action)
             else -> println("Unknown action type: ${action.type}")
         }
@@ -153,37 +155,30 @@ class WSController(
         )
     }
 
-    private fun handleUseCard(
+    private fun handleCardAction(
         gameId: String,
         playerName: String,
         action: WSActionRequest
     ) {
-        val body = mapper.getAs<UseCard>(action.body)
+        val body = mapper.getAs<CardAction>(action.body)
         val game = gameService.getGame(gameId)
         val player = game.players.find { it.name == playerName } ?: return
         val sourceList = when(body.source) {
             Card.Source.HAND -> player.private.inHandCards
             Card.Source.PLAY -> player.private.inPlayCards
             Card.Source.DISCARD -> player.private.discardedCards
-            Card.Source.INTRIGUES -> player.private.intrigueCards
+            Card.Source.INTRIGUE -> player.private.intrigueCards
         }
 
         val removable = sourceList.find { it.url == body.url }
 
         removable?.let {
             sourceList.remove(it)
-            if (it is AgentCard) {
-                when(body.source) {
-                    Card.Source.HAND -> player.private.inPlayCards.add(it)
-                    Card.Source.PLAY -> player.private.inHandCards.add(it)
-                    Card.Source.DISCARD -> player.private.inHandCards.add(it)
-                    else -> {}
-                }
-            } else if (it is IntrigueCard) {
-                when(body.source) {
-                    Card.Source.INTRIGUES -> player.private.usedIntrigues.add(it)
-                    else -> {}
-                }
+            when (action.type) {
+                USE_CARD -> useCard(it, body, player)
+                DISCARD_CARD -> discardCard(it as AgentCard, body, player)
+                TRASH_CARD -> {}
+                else -> {}
             }
 
             simpMessagingTemplate.convertAndSendToUser(
@@ -194,8 +189,31 @@ class WSController(
 
             simpMessagingTemplate.convertAndSend(
                 "/topic/game/$gameId",
-                WSActionResponse(CARD_USED, mapper.toTree(WSActionResponse.CardUsed(body.url, playerName)))
+                WSActionResponse(CARD_USED, mapper.toTree(CardUsed(body.url, playerName)))
             )
+        }
+    }
+
+    private fun useCard(card: Card, body: CardAction, player: Player) {
+        if (card is AgentCard) {
+            when(body.source) {
+                Card.Source.HAND -> player.private.inPlayCards.add(card)
+                Card.Source.PLAY -> player.private.inHandCards.add(card)
+                Card.Source.DISCARD -> player.private.inHandCards.add(card)
+                else -> {}
+            }
+        } else if (card is IntrigueCard) {
+            when(body.source) {
+                Card.Source.INTRIGUE -> player.private.usedIntrigues.add(card)
+                else -> {}
+            }
+        }
+    }
+
+    private fun discardCard(card: AgentCard, body: CardAction, player: Player) {
+        when(body.source) {
+            Card.Source.HAND -> player.private.discardedCards.add(card)
+            else -> {}
         }
     }
 

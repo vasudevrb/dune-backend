@@ -23,6 +23,7 @@ data class Game(
     val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.getConflicts())
 
     val imperiumRow: ArrayList<ImperiumCard> = imperiumCards.draw(5)
+    val reserveRow: ArrayList<ImperiumCard> = arrayListOf()
 
     @JsonIgnore
     val availableObjectives = arrayListOf(DesertMouse, Ornithopter, Crysknife)
