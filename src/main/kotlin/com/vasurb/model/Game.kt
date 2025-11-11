@@ -2,6 +2,7 @@ package com.vasurb.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.vasurb.model.Objective.*
+import com.vasurb.model.ReserveCard.ReserveType
 
 data class Game(
     val gameId: String,
@@ -18,12 +19,17 @@ data class Game(
     @JsonIgnore
     val imperiumCards: Deck<ImperiumCard> = Deck(ImperiumCard.getAll())
     @JsonIgnore
+    val reserveCards: Map<ReserveType, ArrayList<ReserveCard>> = ReserveCard.getAll()
+
+    @JsonIgnore
     val intrigueCards: Deck<IntrigueCard> = Deck(arrayListOf())
     @JsonIgnore
     val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.getConflicts())
 
     val imperiumRow: ArrayList<ImperiumCard> = imperiumCards.draw(5)
-    val reserveRow: ArrayList<ImperiumCard> = arrayListOf()
+    val reserveRow: ArrayList<ReserveCard> = ReserveType.entries
+        .mapNotNull { reserveCards.getValue(it).removeFirstOrNull() }
+        .toMutableList() as ArrayList<ReserveCard>
 
     @JsonIgnore
     val availableObjectives = arrayListOf(DesertMouse, Ornithopter, Crysknife)

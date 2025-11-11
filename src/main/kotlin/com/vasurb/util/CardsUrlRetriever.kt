@@ -4,6 +4,7 @@ import com.vasurb.model.Card
 import com.vasurb.model.ConflictCard
 import com.vasurb.model.PlayableCharacter
 import com.vasurb.model.PlayableCharacter.*
+import com.vasurb.model.ReserveCard
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
@@ -14,8 +15,9 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
 
     data class Key(
         val first: Card.Type,
-        val second: ConflictCard.ConflictType? = null,
-    )
+        val second: String? = null,
+    ) {
+    }
 
     override fun run(vararg args: String?) {
         val resolver = PathMatchingResourcePatternResolver();
@@ -25,13 +27,20 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
                 if (cardType == Card.Type.CONFLICT) {
                     ConflictCard.ConflictType.entries
                         .map { conflictLevel ->
-                            cardImageUrls[Key(cardType, conflictLevel)] = getUrls(getConflictDirectory(conflictLevel), resolver)
+                            cardImageUrls[Key(cardType, conflictLevel.name)] = getUrls(getConflictDirectory(conflictLevel), resolver)
                         }
 
+                } else if (cardType == Card.Type.RESERVE) {
+                    ReserveCard.ReserveType.entries
+                        .map {reserveType ->
+                            cardImageUrls[Key(cardType, reserveType.name)] = getUrls(getReserveDirectory(reserveType), resolver)
+                        }
                 } else {
                     cardImageUrls[Key(cardType)] = getUrls(getDirectoryByCardType(cardType), resolver)
                 }
             }
+
+        print(cardImageUrls)
     }
 
     fun getUrls(directory: String, resolver: PathMatchingResourcePatternResolver): List<String> {
@@ -55,6 +64,13 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
             ConflictCard.ConflictType.LEVEL_1 -> "conflict_cards/level_1"
             ConflictCard.ConflictType.LEVEL_2 -> "conflict_cards/level_2"
             ConflictCard.ConflictType.LEVEL_3 -> "conflict_cards/level_3"
+        }
+    }
+
+    fun getReserveDirectory(reserveType: ReserveCard.ReserveType): String {
+        return when (reserveType) {
+            ReserveCard.ReserveType.THE_SPICE_MUST_FLOW -> "reserve_cards/the_spice_must_flow"
+            ReserveCard.ReserveType.PREPARE_THE_WAY -> "reserve_cards/prepare_the_way"
         }
     }
 

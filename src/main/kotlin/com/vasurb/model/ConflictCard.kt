@@ -16,17 +16,17 @@ data class ConflictCard(
     companion object{
         fun getConflicts(): ArrayList<ConflictCard>{
             val level1 = CardsUrlRetriever
-                .cardImageUrls[Key(Card.Type.CONFLICT, ConflictType.LEVEL_1)]
+                .cardImageUrls[Key(Card.Type.CONFLICT, ConflictType.LEVEL_1.name)]
                 ?.map { url -> ConflictCard(url, ConflictType.LEVEL_1) }
                 ?.toMutableList() as ArrayList<ConflictCard>
 
             val level2 = CardsUrlRetriever
-                .cardImageUrls[Key(Card.Type.CONFLICT, ConflictType.LEVEL_2)]
+                .cardImageUrls[Key(Card.Type.CONFLICT, ConflictType.LEVEL_2.name)]
                 ?.map { url -> ConflictCard(url, ConflictType.LEVEL_2) }
                 ?.toMutableList() as ArrayList<ConflictCard>
 
             val level3 = CardsUrlRetriever
-                .cardImageUrls[Key(Card.Type.CONFLICT, ConflictType.LEVEL_3)]
+                .cardImageUrls[Key(Card.Type.CONFLICT, ConflictType.LEVEL_3.name)]
                 ?.map { url -> ConflictCard(url, ConflictType.LEVEL_3) }
                 ?.toMutableList() as ArrayList<ConflictCard>
 

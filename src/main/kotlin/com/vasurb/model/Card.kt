@@ -2,10 +2,10 @@ package com.vasurb.model
 
 interface Card {
     val url: String
-    val type: Card.Type
+    val type: Type
 
     enum class Type {
-        IMPERIUM, INTRIGUE, CONFLICT, STARTER
+        IMPERIUM, INTRIGUE, CONFLICT, STARTER, RESERVE
     }
 
     enum class Source {
