@@ -55,6 +55,8 @@ class GameController(val gameService: GameService) {
             .shuffled(Util.getDeterministicRandom(body.playerName))
             .take(NUM_PICKABLE_CHARACTERS)
 
+        println("Presenting characters: $characters")
+
         //TODO: Handle when characters is an empty list?
         characters.forEach { game.availableCharacters.remove(it) }
         game.presentedCharacters[body.playerName] = characters
