@@ -65,11 +65,11 @@ class GameService {
                 add(mapper.createObjectNode().apply {
                     put("playerName", it.name)
                     put("color", it.color.name)
-                    put("characterName", it.character.name)
+                    put("characterName", it.character?.name)
                     putArray("characterUrls").apply {
-                        it.character.urls.forEach { url -> add(url) }
+                        it.character?.let{ character -> character.urls.forEach { url -> add(url) }}
                     }
-                    put("avatarUrl", it.character.avatarUrl)
+                    put("avatarUrl", it.character?.avatarUrl)
                     put("objective", it.objectives[0].name)
                     put("status", if (it.readyState != null) "Ready" else "Not ready")
                 })

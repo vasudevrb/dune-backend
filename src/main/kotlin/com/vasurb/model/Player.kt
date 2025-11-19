@@ -9,7 +9,7 @@ data class Player(
     val color: Color
 ) {
     @get:JsonProperty
-    var character: CharacterModel = CharacterModel.get(PlayableCharacter.MUAD_DIB)
+    var character: CharacterModel? = null
 
     @get:JsonProperty
     val agents = arrayListOf(

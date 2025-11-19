@@ -5,6 +5,10 @@ import com.vasurb.api.model.RequestCharactersBody
 import com.vasurb.api.model.CharactersResponse
 import com.vasurb.api.model.CreateGameResponse
 import com.vasurb.api.model.JoinGameResponse
+import com.vasurb.api.model.JoinGameResponse.JoinGameState.CANNOT_JOIN_GAME_STARTED
+import com.vasurb.api.model.JoinGameResponse.JoinGameState.CANNOT_JOIN_MAX_PLAYERS
+import com.vasurb.api.model.JoinGameResponse.JoinGameState.IN_GAME
+import com.vasurb.api.model.JoinGameResponse.JoinGameState.IN_LOBBY
 import com.vasurb.api.model.PickCharacterBody
 import com.vasurb.api.model.PickCharacterResponse
 import com.vasurb.model.CharacterModel
@@ -25,27 +29,32 @@ class GameController(val gameService: GameService) {
 
     @GetMapping("/create-game")
     fun createGame(@RequestParam playerName: String): CreateGameResponse {
-        val hostPlayer = Player(
+        val game = gameService.createGame(Player(
             playerName,
             isHost = true,
             color = Color.GOLD
-        )
-
-        return CreateGameResponse(gameService.createGame(hostPlayer).gameId)
+        ))
+        return CreateGameResponse(game.gameId)
     }
 
     @GetMapping("/join-game")
     fun joinGame(@RequestParam playerName: String, @RequestParam gameId: String): JoinGameResponse {
         val game = gameService.getGame(gameId)
-        if (game.getPlayerByName(playerName) != null) {
-            //Player already added to game
-            return JoinGameResponse(gameId, true)
-        } else {
-            val color = game.availableColors.random()
-            val player = Player(playerName, color = color)
-            game.availableColors.remove(color)
-            return JoinGameResponse(gameService.addPlayer(player, gameId).gameId)
+        val player = game.getPlayerByName(playerName)
+        val joinState = when {
+            player != null && player.character != null && !game.isStarted -> IN_LOBBY
+            player != null && player.character != null && game.isStarted -> IN_GAME
+            player != null -> JoinGameResponse.JoinGameState.PREVIOUSLY_JOINED
+            game.isStarted -> CANNOT_JOIN_GAME_STARTED
+            game.players.size >= 4 -> CANNOT_JOIN_MAX_PLAYERS
+            else -> {
+                val color = game.availableColors.removeAt(0)
+                val newPlayer = Player(playerName, color = color)
+                gameService.addPlayer(newPlayer, gameId).gameId
+                JoinGameResponse.JoinGameState.JOINED
+            }
         }
+        return JoinGameResponse(gameId, joinState)
     }
 
     @PostMapping("/characters")
