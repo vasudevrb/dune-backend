@@ -119,12 +119,23 @@ class GameService {
         return WSActionResponse(messages)
     }
 
-    fun getResumeGame(gameId: String, playerName: String): WSActionResponse {
+    fun getResumeGame(gameId: String, playerName: String): WSActionResponse? {
         val game = getGame(gameId)
-        return WSActionResponse(listOf(WSActionResponse.Message(
-            WSActionResponse.SinglePlayer(playerName),
-            WSActionResponse.Content(WSActionResponse.Type.START_GAME, mapper.toTree(game, includePrivate = true))
-        )))
+        val playerInfo = game.players.find { it.name == playerName }
+        return playerInfo?.let {
+            WSActionResponse(
+                listOf(
+                    WSActionResponse.Message(
+                        WSActionResponse.SinglePlayer(playerName),
+                        WSActionResponse.Content(WSActionResponse.Type.START_GAME, mapper.toTree(game))
+                    ),
+                    WSActionResponse.Message(
+                        WSActionResponse.SinglePlayer(playerName),
+                        WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(playerInfo, includePrivate = true))
+                    )
+                )
+            )
+        }
     }
 
     fun handleCardAction(
