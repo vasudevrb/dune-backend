@@ -6,9 +6,8 @@ import com.vasurb.model.ReserveCard.ReserveType
 
 data class Game(
     val gameId: String,
-    val locations: List<Location> = listOf(
-        Location("Deep Desert", 1)
-    ),
+    val locations: List<Location> = Location.LOCATIONS,
+    val spyLocations: List<SpyLocation> = SpyLocation.SPY_LOCATIONS,
     val players: ArrayList<Player> = arrayListOf()
 ) {
 
