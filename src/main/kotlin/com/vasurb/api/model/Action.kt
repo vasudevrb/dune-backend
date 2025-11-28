@@ -26,7 +26,6 @@ class Action(
         BUY_IMPERIUM_CARD,
         BUY_RESERVE_CARD,
         GAIN_INTRIGUE_CARD,
-        USE_INTRIGUE_CARD,
         STEAL_INTRIGUE_CARD,
         DRAW_CARD,
         DISCARD_CARD,

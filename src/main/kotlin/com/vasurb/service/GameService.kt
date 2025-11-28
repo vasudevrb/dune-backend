@@ -148,7 +148,7 @@ class GameService {
         val player = getPlayer(gameId, playerName)
 
         player.private.inHandCards.add(player.private.drawPile.draw())
-        val message = "$playerName drew a card";
+        val message = "$playerName drew a card"
 
         return WSActionResponse(
             listOf(
@@ -162,6 +162,82 @@ class GameService {
                 )
             )
         )
+    }
+
+    fun drawIntrigueCard(
+        gameId: String,
+        playerName: String,
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+
+        player.private.intrigueCards.add(game.intrigueCards.draw())
+        val message = "$playerName drew an intrigue card"
+
+        return WSActionResponse(
+            listOf(
+                WSActionResponse.Message(
+                    WSActionResponse.SinglePlayer(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+                ),
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayersExcept(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION, mapper.toTree(Notification(message)))
+                )
+            )
+        )
+    }
+
+    fun stealIntrigueCards(
+        gameId: String,
+        playerName: String,
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+
+        val stealablePlayers = game.players.filter { it.private.intrigueCards.size > 3 }
+        if (stealablePlayers.isEmpty()) {
+            val msg = "No players have more than 3 intrigue cards."
+            return WSActionResponse(
+                listOf(
+                    WSActionResponse.Message(
+                        WSActionResponse.AllPlayers,
+                        WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION, mapper.toTree(Notification(msg)))
+                    )
+                )
+            )
+        }
+
+        stealablePlayers.forEach {
+            val intrigue = it.private.intrigueCards.random()
+            player.private.intrigueCards.add(intrigue)
+        }
+
+        val notifyMessage = "$playerName stole intrigue cards from ${stealablePlayers.joinToString(", ") { it.name }}."
+        val messages = arrayListOf(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        stealablePlayers.forEach {
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.SinglePlayer(it.name),
+                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(it, includePrivate = true))
+                )
+            )
+        }
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION, mapper.toTree(Notification(notifyMessage)))
+            )
+        )
+
+        return WSActionResponse(messages)
     }
 
     fun handleCardAction(
