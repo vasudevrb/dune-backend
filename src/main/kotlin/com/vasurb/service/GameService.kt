@@ -8,9 +8,11 @@ import com.vasurb.api.model.ws_request.CardAction
 import com.vasurb.api.model.ws_request.CardUsed
 import com.vasurb.api.model.ws_request.Notification
 import com.vasurb.api.model.ws_request.PlaceAgent
+import com.vasurb.api.model.ws_request.RecallAgent
 import com.vasurb.api.model.ws_request.WSActionRequest
 import com.vasurb.api.model.ws_request.WSActionResponse
 import com.vasurb.exception.ExpiredGameException
+import com.vasurb.model.Agent
 import com.vasurb.model.AgentCard
 import com.vasurb.model.Card
 import com.vasurb.model.Game
@@ -266,6 +268,47 @@ class GameService {
         if (location != null && player != null) {
             location.agents.add(Location.Agent(agentId, player.color.name, player.name))
             player.agents.removeAll { it.id == agentId }
+        }
+    }
+
+    fun handleRecallAgent(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val body = mapper.getAs<RecallAgent>(action.body)
+        val game = getGame(gameId)
+        val location = game.locations.find { it.agents.find { agent -> agent.agentId == body.agentId } != null}
+        val otherPlayers = game.players.filterNot { it.name == playerName }
+        recallAgent(gameId, playerName, location, body.agentId)
+
+        val updatedPlayer = game.players
+            .find { it.name == playerName }
+            ?.let { WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(it)) }
+
+        val updatedLocation = game.locations
+            .find { it.id == location?.id }
+            ?.let { WSActionResponse.Content(WSActionResponse.Type.UPDATE_LOCATION, mapper.toTree(it)) }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        otherPlayers.forEach {
+            messages.add(WSActionResponse.Message(WSActionResponse.SinglePlayer(it.name), updatedPlayer))
+            messages.add(WSActionResponse.Message(WSActionResponse.SinglePlayer(it.name), updatedLocation))
+        }
+
+        return WSActionResponse(messages)
+    }
+
+    fun recallAgent(
+        gameId: String,
+        playerName: String,
+        location: Location?,
+        agentId: String
+    ) {
+        val player = getPlayer(gameId, playerName)
+        if (location != null) {
+            location.agents.removeIf { agent -> agent.agentId == agentId }
+            player.agents.add(Agent(agentId))
         }
     }
 

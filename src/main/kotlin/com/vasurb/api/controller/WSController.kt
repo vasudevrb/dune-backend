@@ -38,6 +38,7 @@ class WSController(
             USE_CARD, DISCARD_CARD, TRASH_CARD -> gameService.handleCardAction(gameId, playerName, action)
             DRAW_CARD -> gameService.drawCard(gameId, playerName)
             PLACE_AGENT -> gameService.handlePlaceAgent(playerName, gameId, action)
+            RECALL_AGENT -> gameService.handleRecallAgent(playerName, gameId, action)
             else -> null
         }
 
