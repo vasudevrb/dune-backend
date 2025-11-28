@@ -7,6 +7,7 @@ data class WSActionResponse(val messages: List<Message>) {
 
     sealed interface Recipient
     data class SinglePlayer(val playerName: String): Recipient
+    data class AllPlayersExcept(val playerName: String): Recipient
     object AllPlayers: Recipient
 
     data class Message(val recipient: Recipient, val content: Content?)
@@ -18,6 +19,7 @@ data class WSActionResponse(val messages: List<Message>) {
         UPDATE_PLAYER,
         UPDATE_LOCATION,
         CARD_USED,
+        SHOW_NOTIFICATION,
     }
 
 }

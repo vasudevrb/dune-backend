@@ -6,6 +6,7 @@ import com.vasurb.api.model.Action.Type.USE_CARD
 import com.vasurb.api.model.ws_request.AddToGame
 import com.vasurb.api.model.ws_request.CardAction
 import com.vasurb.api.model.ws_request.CardUsed
+import com.vasurb.api.model.ws_request.Notification
 import com.vasurb.api.model.ws_request.PlaceAgent
 import com.vasurb.api.model.ws_request.WSActionRequest
 import com.vasurb.api.model.ws_request.WSActionResponse
@@ -136,6 +137,29 @@ class GameService {
                 )
             )
         }
+    }
+
+    fun drawCard(
+        gameId: String,
+        playerName: String
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+
+        player.private.inHandCards.add(player.private.drawPile.draw())
+        val message = "$playerName drew a card";
+
+        return WSActionResponse(
+            listOf(
+                WSActionResponse.Message(
+                    WSActionResponse.SinglePlayer(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+                ),
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayersExcept(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION, mapper.toTree(Notification(message)))
+                )
+            )
+        )
     }
 
     fun handleCardAction(
@@ -270,6 +294,13 @@ class GameService {
         val game = getGame(gameId)
         return game.getPlayerByName(playerName)
             ?: throw ExpiredGameException("Player $playerName is not assigned to this game")
+    }
+
+    fun getAllPlayersExcept(gameId: String, playerName: String): List<String> {
+        return getGame(gameId)
+            .players
+            .map { it.name }
+            .filterNot { it == playerName }
     }
 
     fun getGame(id: String): Game = games[id]

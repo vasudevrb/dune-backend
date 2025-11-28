@@ -36,6 +36,7 @@ class WSController(
             START_GAME -> gameService.getStartGame(gameId)
             RESUME_GAME -> gameService.getResumeGame(gameId, playerName)
             USE_CARD, DISCARD_CARD, TRASH_CARD -> gameService.handleCardAction(gameId, playerName, action)
+            DRAW_CARD -> gameService.drawCard(gameId, playerName)
             PLACE_AGENT -> gameService.handlePlaceAgent(playerName, gameId, action)
             else -> null
         }
@@ -47,6 +48,9 @@ class WSController(
                     sendMessageToAll(gameId, message.content)
                 is WSActionResponse.SinglePlayer ->
                     sendMessageToUser(gameId, message.recipient.playerName, message.content)
+                is WSActionResponse.AllPlayersExcept ->
+                    gameService.getAllPlayersExcept(gameId, message.recipient.playerName)
+                        .forEach { sendMessageToUser(gameId, it, message.content) }
             }
         }
     }
