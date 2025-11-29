@@ -277,7 +277,7 @@ class GameService {
 
             messages.add(WSActionResponse.Message(
                 WSActionResponse.AllPlayers,
-                WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(body.url, playerName)))
+                WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(body.url, playerName, action.type)))
             ))
         }
 
