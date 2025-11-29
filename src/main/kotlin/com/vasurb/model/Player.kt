@@ -38,7 +38,7 @@ data class Player(
     @get:JsonProperty
     var objectives: ArrayList<Objective> = arrayListOf()
     var numCards: NumCardsModel = NumCardsModel()
-    var resources: Map<Resource, Int> = mapOf(
+    var resources: MutableMap<Resource, Int> = mutableMapOf(
         Resource.water to 1,
         Resource.spice to 0,
         Resource.solari to 0,

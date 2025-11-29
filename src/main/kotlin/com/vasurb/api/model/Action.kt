@@ -20,6 +20,7 @@ class Action(
         MOVE_COMBAT_UNIT,
         ADD_OR_REMOVE_COMBAT_UNIT,
         ADD_OR_REMOVE_RESOURCE,
+        END_TURN,
         GET_SWORDMASTER,
         PLACE_SPY,
         RECALL_SPY,

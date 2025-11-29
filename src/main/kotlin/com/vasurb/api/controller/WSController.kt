@@ -44,6 +44,8 @@ class WSController(
             RECALL_AGENT -> gameService.handleRecallAgent(playerName, gameId, action)
             MOVE_COMBAT_UNIT -> gameService.handleMoveUnit(playerName, gameId, action)
             ADD_OR_REMOVE_COMBAT_UNIT -> gameService.handleAddOrRemoveCombatUnit(playerName, gameId, action)
+            ADD_OR_REMOVE_RESOURCE -> gameService.handleAddOrRemoveResource(playerName, gameId, action)
+            END_TURN -> gameService.endTurn(gameId)
             else -> null
         }
 

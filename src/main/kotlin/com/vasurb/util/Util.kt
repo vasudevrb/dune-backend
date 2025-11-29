@@ -87,4 +87,7 @@ object Util {
         remove(polled)
         return polled
     }
+
+    fun <K> MutableMap<K, Int>.inc(key: K): Int = merge(key, 1, Math::addExact)!!
+    fun <K> MutableMap<K, Int>.dec(key: K): Int = merge(key, -1, Math::addExact)!!
 }

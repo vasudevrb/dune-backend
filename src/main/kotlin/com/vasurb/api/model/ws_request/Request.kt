@@ -1,6 +1,7 @@
 package com.vasurb.api.model.ws_request
 
 import com.vasurb.model.Card
+import com.vasurb.model.Resource
 
 enum class CombatMovementDestination {
     Combat, Garrison, Supply
@@ -20,8 +21,13 @@ data class MoveCombatUnit(
     val destination: CombatMovementDestination
 )
 
-data class AddCombatUnit(
+data class AddOrRemoveCombatUnit(
     val unitType: String,
+    val add: Boolean
+)
+
+data class AddOrRemoveResource(
+    val resourceType: Resource,
     val add: Boolean
 )
 

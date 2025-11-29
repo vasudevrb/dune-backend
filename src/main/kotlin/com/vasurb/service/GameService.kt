@@ -5,8 +5,10 @@ import com.vasurb.api.model.ws_request.*
 import com.vasurb.exception.ExpiredGameException
 import com.vasurb.model.*
 import com.vasurb.model.Objective.*
+import com.vasurb.util.Util.dec
 import com.vasurb.util.Util.getAs
 import com.vasurb.util.Util.getRandomAndRemove
+import com.vasurb.util.Util.inc
 import com.vasurb.util.Util.mapper
 import com.vasurb.util.Util.toTree
 import org.springframework.stereotype.Component
@@ -100,9 +102,7 @@ class GameService {
                 mapper.toTree(it, includePrivate = true)
             )
             messages.add(
-                WSActionResponse.Message(
-                    WSActionResponse.SinglePlayer(it.name), response
-                )
+                WSActionResponse.Message(WSActionResponse.SinglePlayer(it.name), response)
             )
         }
 
@@ -444,7 +444,7 @@ class GameService {
         action: WSActionRequest
     ): WSActionResponse {
         val player = getPlayer(gameId, playerName)
-        val action = mapper.getAs<AddCombatUnit>(action.body)
+        val action = mapper.getAs<AddOrRemoveCombatUnit>(action.body)
 
         when (action.unitType) {
             "Sandworm" -> {
@@ -482,6 +482,61 @@ class GameService {
         ))
     }
 
+    fun handleAddOrRemoveResource(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<AddOrRemoveResource>(action.body)
+
+        when (action.resourceType) {
+            Resource.water -> if(action.add) player.resources.inc(Resource.water) else player.resources.dec(Resource.water)
+            Resource.spice -> if(action.add) player.resources.inc(Resource.spice) else player.resources.dec(Resource.spice)
+            Resource.solari -> if(action.add) player.resources.inc(Resource.solari) else player.resources.dec(Resource.solari)
+        }
+
+        val responseBody = mapper.createObjectNode().apply {
+            put("playerName", playerName)
+            putPOJO("resources", player.resources)
+        }
+
+        val message = WSActionResponse.Message(
+            WSActionResponse.AllPlayersExcept(playerName),
+            WSActionResponse.Content(WSActionResponse.Type.UPDATE_RESOURCES, responseBody)
+        )
+
+        return WSActionResponse(listOf(
+            message,
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName ${if (action.add) "gained" else "spent"} 1 ${action.resourceType}"))
+                )
+            )
+        ))
+    }
+
+    fun endTurn(
+        gameId: String
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val currentPlayerIndex = game.players.indexOfFirst { it.name == game.currentPlayer }
+        game.currentPlayer =
+            if (currentPlayerIndex == game.players.size - 1) game.players[0].name
+            else game.players[currentPlayerIndex + 1].name
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.START_GAME, mapper.toTree(game))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
 
     fun createGame(player: Player): Game {
         val gameId = "dune${games.size + 1}"
