@@ -6,6 +6,8 @@ import com.vasurb.api.model.Action.Type.USE_CARD
 import com.vasurb.api.model.ws_request.AddToGame
 import com.vasurb.api.model.ws_request.CardAction
 import com.vasurb.api.model.ws_request.CardUsed
+import com.vasurb.api.model.ws_request.CombatMovementDestination
+import com.vasurb.api.model.ws_request.MoveCombatUnit
 import com.vasurb.api.model.ws_request.Notification
 import com.vasurb.api.model.ws_request.PlaceAgent
 import com.vasurb.api.model.ws_request.RecallAgent
@@ -386,6 +388,46 @@ class GameService {
             location.agents.removeIf { agent -> agent.agentId == agentId }
             player.agents.add(Agent(agentId))
         }
+    }
+
+    fun handleMoveUnit(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<MoveCombatUnit>(action.body)
+
+        when (action.destination) {
+            CombatMovementDestination.Combat -> {
+                player.combat.troopsInCombat += 1
+                player.combat.strength += 2
+                player.combat.troopsInGarrison -= 1
+            }
+
+            CombatMovementDestination.Garrison -> {
+                player.combat.troopsInCombat-=1
+                player.combat.strength -= 2
+                player.combat.troopsInGarrison+=1
+            }
+
+            CombatMovementDestination.Supply -> {
+                player.combat.troopsInCombat-=1
+                player.combat.strength -= 2
+            }
+        }
+
+        val responseBody = mapper.createObjectNode().apply {
+            put("playerName", playerName)
+            putPOJO("combat", player.combat)
+        }
+
+        val message = WSActionResponse.Message(
+            WSActionResponse.AllPlayersExcept(playerName),
+            WSActionResponse.Content(WSActionResponse.Type.UPDATE_COMBAT, responseBody)
+        )
+
+        return WSActionResponse(listOf(message))
     }
 
 

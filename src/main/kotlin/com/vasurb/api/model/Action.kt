@@ -17,6 +17,7 @@ class Action(
         USE_CARD,
         PLACE_AGENT,
         RECALL_AGENT,
+        MOVE_COMBAT_UNIT,
         GET_SWORDMASTER,
         PLACE_SPY,
         RECALL_SPY,

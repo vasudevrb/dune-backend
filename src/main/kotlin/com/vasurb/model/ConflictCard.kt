@@ -9,8 +9,8 @@ data class ConflictCard(
 ): Card {
     override val type: Card.Type = Card.Type.CONFLICT
 
-    enum class ConflictType {
-        LEVEL_1, LEVEL_2, LEVEL_3
+    enum class ConflictType(val level: Int) {
+        LEVEL_1(1), LEVEL_2(2), LEVEL_3(3)
     }
 
     companion object{

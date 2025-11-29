@@ -1,6 +1,7 @@
 package com.vasurb.api.controller
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.vasurb.api.model.Action
 import com.vasurb.api.model.Action.Type.*
 import com.vasurb.api.model.ws_request.WSActionRequest
 import com.vasurb.api.model.ws_request.WSActionResponse
@@ -41,6 +42,7 @@ class WSController(
             STEAL_INTRIGUE_CARD -> gameService.stealIntrigueCards(gameId, playerName)
             PLACE_AGENT -> gameService.handlePlaceAgent(playerName, gameId, action)
             RECALL_AGENT -> gameService.handleRecallAgent(playerName, gameId, action)
+            MOVE_COMBAT_UNIT -> gameService.handleMoveUnit(playerName, gameId, action)
             else -> null
         }
 

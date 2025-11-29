@@ -11,10 +11,6 @@ data class Game(
     val players: ArrayList<Player> = arrayListOf()
 ) {
 
-    var isStarted = false
-    var currentPlayer: String? = null
-    var firstPlayer: String? = null
-
     @JsonIgnore
     val imperiumCards: Deck<ImperiumCard> = Deck(ImperiumCard.getAll())
     @JsonIgnore
@@ -24,6 +20,13 @@ data class Game(
     val intrigueCards: Deck<IntrigueCard> = Deck(arrayListOf())
     @JsonIgnore
     val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.getConflicts())
+
+    var isStarted = false
+    var currentPlayer: String? = null
+    var firstPlayer: String? = null
+
+    var currentConflict: String = conflictCards.draw().url
+    var nextConflictLevel: Int = conflictCards.peek()?.conflictType?.level ?: 3
 
     val imperiumRow: ArrayList<ImperiumCard> = imperiumCards.draw(5)
     val reserveRow: ArrayList<ReserveCard> = ReserveType.entries

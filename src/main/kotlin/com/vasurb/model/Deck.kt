@@ -17,6 +17,14 @@ data class Deck<T: Card>(
         return cards.removeAt(0)
     }
 
+    fun peek(): T? {
+        if (cards.isEmpty()) {
+            return null
+        }
+
+        return cards[0]
+    }
+
     fun draw(num: Int): ArrayList<T> {
         return (0 until num).map { draw() }.toMutableList() as ArrayList<T>
     }
