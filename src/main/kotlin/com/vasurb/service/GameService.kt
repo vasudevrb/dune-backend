@@ -317,7 +317,8 @@ class GameService {
 
         val otherPlayers = game.players.filterNot { it.name == playerName }
 
-        sendAgent(gameId, body.agentId, body.locationId)
+        val location = game.locations.find { it.id == body.locationId }
+        sendAgent(gameId, body.agentId, location)
         val updatedPlayer = game.players
             .find { it.name == playerName }
             ?.let { WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(it)) }
@@ -332,16 +333,20 @@ class GameService {
             messages.add(WSActionResponse.Message(WSActionResponse.SinglePlayer(it.name), updatedLocation))
         }
 
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION,  mapper.toTree(Notification("$playerName sent an agent to ${location?.name}")))
+                ))
         return WSActionResponse(messages)
     }
 
     fun sendAgent(
         gameId: String,
         agentId: String,
-        locationId: Int
+        location: Location?
     ) {
         val game = getGame(gameId)
-        val location = game.locations.find { it.id == locationId }
         val player = game.players.find { player -> player.agents.any { a -> a.id == agentId } }
         if (location != null && player != null) {
             location.agents.add(Location.Agent(agentId, player.color.name, player.name))
@@ -373,6 +378,12 @@ class GameService {
             messages.add(WSActionResponse.Message(WSActionResponse.SinglePlayer(it.name), updatedPlayer))
             messages.add(WSActionResponse.Message(WSActionResponse.SinglePlayer(it.name), updatedLocation))
         }
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION,  mapper.toTree(Notification("$playerName recalled an agent from ${location?.name}")))
+                ))
 
         return WSActionResponse(messages)
     }
