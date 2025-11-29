@@ -19,7 +19,7 @@ data class Game(
     @JsonIgnore
     val intrigueCards: Deck<IntrigueCard> = Deck(arrayListOf())
     @JsonIgnore
-    val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.getConflicts())
+    val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.getConflicts(), shuffleAtStart = false)
 
     var isStarted = false
     var currentPlayer: String? = null

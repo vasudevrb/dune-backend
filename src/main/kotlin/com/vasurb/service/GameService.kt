@@ -1,29 +1,10 @@
 package com.vasurb.service
 
-import com.vasurb.api.model.Action.Type.DISCARD_CARD
-import com.vasurb.api.model.Action.Type.TRASH_CARD
-import com.vasurb.api.model.Action.Type.USE_CARD
-import com.vasurb.api.model.ws_request.AddToGame
-import com.vasurb.api.model.ws_request.CardAction
-import com.vasurb.api.model.ws_request.CardUsed
-import com.vasurb.api.model.ws_request.CombatMovementDestination
-import com.vasurb.api.model.ws_request.MoveCombatUnit
-import com.vasurb.api.model.ws_request.Notification
-import com.vasurb.api.model.ws_request.PlaceAgent
-import com.vasurb.api.model.ws_request.RecallAgent
-import com.vasurb.api.model.ws_request.WSActionRequest
-import com.vasurb.api.model.ws_request.WSActionResponse
+import com.vasurb.api.model.Action.Type.*
+import com.vasurb.api.model.ws_request.*
 import com.vasurb.exception.ExpiredGameException
-import com.vasurb.model.Agent
-import com.vasurb.model.AgentCard
-import com.vasurb.model.Card
-import com.vasurb.model.Game
-import com.vasurb.model.IntrigueCard
-import com.vasurb.model.Location
-import com.vasurb.model.Objective.Crysknife
-import com.vasurb.model.Objective.DesertMouse
-import com.vasurb.model.Objective.Ornithopter
-import com.vasurb.model.Player
+import com.vasurb.model.*
+import com.vasurb.model.Objective.*
 import com.vasurb.util.Util.getAs
 import com.vasurb.util.Util.getRandomAndRemove
 import com.vasurb.util.Util.mapper
@@ -72,7 +53,7 @@ class GameService {
                     put("color", it.color.name)
                     put("characterName", it.character?.name)
                     putArray("characterUrls").apply {
-                        it.character?.let{ character -> character.urls.forEach { url -> add(url) }}
+                        it.character?.let { character -> character.urls.forEach { url -> add(url) } }
                     }
                     put("avatarUrl", it.character?.avatarUrl)
                     put("objective", it.objectives[0].name)
@@ -106,19 +87,23 @@ class GameService {
         game.currentPlayer = firstPlayer.name
 
         val messages = arrayListOf<WSActionResponse.Message>()
-        messages.add(WSActionResponse.Message(
-            WSActionResponse.AllPlayers,
-            WSActionResponse.Content(WSActionResponse.Type.START_GAME, mapper.toTree(game))
-        ))
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.START_GAME, mapper.toTree(game))
+            )
+        )
 
         game.players.forEach {
             val response = WSActionResponse.Content(
                 WSActionResponse.Type.UPDATE_PLAYER,
                 mapper.toTree(it, includePrivate = true)
             )
-            messages.add(WSActionResponse.Message(
-                WSActionResponse.SinglePlayer(it.name), response
-            ))
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.SinglePlayer(it.name), response
+                )
+            )
         }
 
         return WSActionResponse(messages)
@@ -251,7 +236,7 @@ class GameService {
         val game = getGame(gameId)
         val player = game.players.find { it.name == playerName }
             ?: return WSActionResponse(listOf())
-        val sourceList = when(body.source) {
+        val sourceList = when (body.source) {
             Card.Source.HAND -> player.private.inHandCards
             Card.Source.PLAY -> player.private.inPlayCards
             Card.Source.DISCARD -> player.private.discardedCards
@@ -270,15 +255,19 @@ class GameService {
                 else -> {}
             }
 
-            messages.add(WSActionResponse.Message(
-                WSActionResponse.SinglePlayer(playerName),
-                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
-            ))
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.SinglePlayer(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+                )
+            )
 
-            messages.add(WSActionResponse.Message(
-                WSActionResponse.AllPlayers,
-                WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(body.url, playerName, action.type)))
-            ))
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayers,
+                    WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(body.url, playerName, action.type)))
+                )
+            )
         }
 
         return WSActionResponse(messages)
@@ -286,14 +275,14 @@ class GameService {
 
     private fun useCard(card: Card, body: CardAction, player: Player) {
         if (card is AgentCard) {
-            when(body.source) {
+            when (body.source) {
                 Card.Source.HAND -> player.private.inPlayCards.add(card)
                 Card.Source.PLAY -> player.private.inHandCards.add(card)
                 Card.Source.DISCARD -> player.private.inHandCards.add(card)
                 else -> {}
             }
         } else if (card is IntrigueCard) {
-            when(body.source) {
+            when (body.source) {
                 Card.Source.INTRIGUE -> player.private.usedIntrigues.add(card)
                 else -> {}
             }
@@ -301,7 +290,7 @@ class GameService {
     }
 
     private fun discardCard(card: AgentCard, body: CardAction, player: Player) {
-        when(body.source) {
+        when (body.source) {
             Card.Source.HAND -> player.private.discardedCards.add(card)
             else -> {}
         }
@@ -336,8 +325,12 @@ class GameService {
         messages.add(
             WSActionResponse.Message(
                 WSActionResponse.AllPlayersExcept(playerName),
-                WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION,  mapper.toTree(Notification("$playerName sent an agent to ${location?.name}")))
-                ))
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName sent an agent to ${location?.name}"))
+                )
+            )
+        )
         return WSActionResponse(messages)
     }
 
@@ -361,7 +354,7 @@ class GameService {
     ): WSActionResponse {
         val body = mapper.getAs<RecallAgent>(action.body)
         val game = getGame(gameId)
-        val location = game.locations.find { it.agents.find { agent -> agent.agentId == body.agentId } != null}
+        val location = game.locations.find { it.agents.find { agent -> agent.agentId == body.agentId } != null }
         val otherPlayers = game.players.filterNot { it.name == playerName }
         recallAgent(gameId, playerName, location, body.agentId)
 
@@ -382,8 +375,12 @@ class GameService {
         messages.add(
             WSActionResponse.Message(
                 WSActionResponse.AllPlayersExcept(playerName),
-                WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION,  mapper.toTree(Notification("$playerName recalled an agent from ${location?.name}")))
-                ))
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName recalled an agent from ${location?.name}"))
+                )
+            )
+        )
 
         return WSActionResponse(messages)
     }
@@ -417,13 +414,13 @@ class GameService {
             }
 
             CombatMovementDestination.Garrison -> {
-                player.combat.troopsInCombat-=1
+                player.combat.troopsInCombat -= 1
                 player.combat.strength -= 2
-                player.combat.troopsInGarrison+=1
+                player.combat.troopsInGarrison += 1
             }
 
             CombatMovementDestination.Supply -> {
-                player.combat.troopsInCombat-=1
+                player.combat.troopsInCombat -= 1
                 player.combat.strength -= 2
             }
         }
@@ -439,6 +436,50 @@ class GameService {
         )
 
         return WSActionResponse(listOf(message))
+    }
+
+    fun handleAddOrRemoveCombatUnit(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<AddCombatUnit>(action.body)
+
+        when (action.unitType) {
+            "Sandworm" -> {
+                if (action.add){
+                    player.combat.wormsInCombat++
+                    player.combat.strength += 3
+                } else {
+                    player.combat.wormsInCombat--
+                    player.combat.strength -= 3
+                }
+            }
+            "Troop" -> if (action.add) player.combat.troopsInGarrison++ else player.combat.troopsInGarrison--
+            "Strength" -> if (action.add) player.combat.strength++ else player.combat.strength--
+        }
+
+        val responseBody = mapper.createObjectNode().apply {
+            put("playerName", playerName)
+            putPOJO("combat", player.combat)
+        }
+
+        val message = WSActionResponse.Message(
+            WSActionResponse.AllPlayersExcept(playerName),
+            WSActionResponse.Content(WSActionResponse.Type.UPDATE_COMBAT, responseBody)
+        )
+
+        return WSActionResponse(listOf(
+            message,
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName ${if (action.add) "increased" else "decreased"} their ${action.unitType}"))
+                )
+            )
+        ))
     }
 
 

@@ -20,6 +20,11 @@ data class MoveCombatUnit(
     val destination: CombatMovementDestination
 )
 
+data class AddCombatUnit(
+    val unitType: String,
+    val add: Boolean
+)
+
 data class CardAction(
     val url: String,
     val source: Card.Source

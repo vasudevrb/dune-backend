@@ -3,10 +3,11 @@ package com.vasurb.model
 data class Deck<T: Card>(
     val cards: ArrayList<T>,
     val reshuffleFrom: ArrayList<T>? = null,
+    val shuffleAtStart: Boolean = true
 ) {
 
     init {
-        cards.shuffle()
+        if (shuffleAtStart) cards.shuffle()
     }
 
     fun draw(): T {
