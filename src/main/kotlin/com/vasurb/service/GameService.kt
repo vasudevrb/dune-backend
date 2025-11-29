@@ -182,7 +182,7 @@ class GameService {
         val game = getGame(gameId)
         val player = getPlayer(gameId, playerName)
 
-        val stealablePlayers = game.players.filter { it.private.intrigueCards.size > 3 }
+        val stealablePlayers = game.players.filter { it.name != playerName && it.private.intrigueCards.size > 3 }
         if (stealablePlayers.isEmpty()) {
             val msg = "No players have more than 3 intrigue cards."
             return WSActionResponse(
@@ -198,6 +198,7 @@ class GameService {
         stealablePlayers.forEach {
             val intrigue = it.private.intrigueCards.random()
             player.private.intrigueCards.add(intrigue)
+            it.private.intrigueCards.remove(intrigue)
         }
 
         val notifyMessage = "$playerName stole intrigue cards from ${stealablePlayers.joinToString(", ") { it.name }}."

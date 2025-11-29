@@ -17,7 +17,7 @@ data class Game(
     val reserveCards: Map<ReserveType, ArrayList<ReserveCard>> = ReserveCard.getAll()
 
     @JsonIgnore
-    val intrigueCards: Deck<IntrigueCard> = Deck(arrayListOf())
+    val intrigueCards: Deck<IntrigueCard> = Deck(IntrigueCard.getAll())
     @JsonIgnore
     val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.getConflicts(), shuffleAtStart = false)
 
