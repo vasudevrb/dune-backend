@@ -616,6 +616,34 @@ class GameService {
         return WSActionResponse(listOf())
     }
 
+    fun unlockSwordmaster(
+        playerName: String,
+        gameId: String,
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        player.swordmasterUnlocked = true
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName unlocked their swordmaster"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
     fun createGame(player: Player): Game {
         val gameId = "dune${games.size + 1}"
         val game = Game(gameId)
