@@ -705,9 +705,54 @@ class GameService {
         messages.add(
             WSActionResponse.Message(
                 WSActionResponse.AllPlayers,
-                WSActionResponse.Content(WSActionResponse.Type.START_GAME, mapper.toTree(game))
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
             )
         )
+
+        return WSActionResponse(messages)
+    }
+
+    fun clearRound(
+        gameId: String,
+    ): WSActionResponse {
+        val game = getGame(gameId)
+
+        val firstPlayerIndex = game.players.indexOfFirst { it.name == game.firstPlayer }
+        game.firstPlayer =
+            if (firstPlayerIndex == game.players.size - 1) game.players[0].name
+            else game.players[firstPlayerIndex + 1].name
+
+        game.currentPlayer = game.firstPlayer
+
+        game.players.forEach {
+            it.combat.troopsInCombat = 0
+            it.combat.wormsInCombat = 0
+            it.combat.strength = 0
+
+            it.private.discardedCards.addAll(it.private.inPlayCards)
+            it.private.inPlayCards.clear()
+            it.private.discardedCards.addAll(it.private.inHandCards)
+            it.private.inHandCards.clear()
+            it.private.inHandCards.addAll(it.private.drawPile.draw(5))
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        game.players.forEach {
+            val response = WSActionResponse.Content(
+                WSActionResponse.Type.UPDATE_PLAYER,
+                mapper.toTree(it, includePrivate = true)
+            )
+            messages.add(
+                WSActionResponse.Message(WSActionResponse.SinglePlayer(it.name), response)
+            )
+        }
 
         return WSActionResponse(messages)
     }
