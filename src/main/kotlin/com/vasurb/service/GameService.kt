@@ -399,6 +399,192 @@ class GameService {
         }
     }
 
+    fun handlePlaceControlFlag(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val body = mapper.getAs<PlaceControlFlag>(action.body)
+        val game = getGame(gameId)
+
+        val location = game.locations.find { it.id == body.locationId }
+        sendControlFlag(gameId, body.controlFlagId, location)
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName gained control of ${location?.name}"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun sendControlFlag(
+        gameId: String,
+        controlFlagId: String,
+        location: Location?
+    ) {
+        val game = getGame(gameId)
+        val player = game.players.find { player -> player.controlFlags.any { cf -> cf.id == controlFlagId } }
+        if (location != null && player != null) {
+            if (location.controlFlag != null) {
+                val prevControlPlayer = getPlayer(gameId, location.controlFlag!!.playerName)
+                prevControlPlayer.controlFlags.add(ControlFlag(location.controlFlag!!.controlFlagId))
+            }
+
+            location.controlFlag = Location.ControlFlag(controlFlagId,  player.color.name, player.name)
+            player.controlFlags.removeAll { it.id == controlFlagId }
+        }
+    }
+
+    fun handleRecallControlFlag(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val body = mapper.getAs<RecallControlFlag>(action.body)
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val location = game.locations.find { it.controlFlag?.controlFlagId == body.controlFlagId }
+        if (location != null) {
+            location.controlFlag = null
+            player.controlFlags.add(ControlFlag(body.controlFlagId))
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName lost control of ${location?.name}"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun handleSendSpy(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val body = mapper.getAs<PlaceSpy>(action.body)
+        val game = getGame(gameId)
+
+        val otherPlayers = game.players.filterNot { it.name == playerName }
+
+        val location = game.spyLocations.find { it.id == body.spyLocationId }
+        sendSpy(gameId, body.spyId, location)
+        val updatedPlayer = game.players
+            .find { it.name == playerName }
+            ?.let { WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(it)) }
+
+        val updatedLocation = game.spyLocations
+            .find { it.id == body.spyLocationId }
+            ?.let { WSActionResponse.Content(WSActionResponse.Type.UPDATE_SPY_LOCATION, mapper.toTree(it)) }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        otherPlayers.forEach {
+            messages.add(WSActionResponse.Message(WSActionResponse.SinglePlayer(it.name), updatedPlayer))
+            messages.add(WSActionResponse.Message(WSActionResponse.SinglePlayer(it.name), updatedLocation))
+        }
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName sent a spy"))
+                )
+            )
+        )
+        return WSActionResponse(messages)
+    }
+
+    fun sendSpy(
+        gameId: String,
+        spyId: String,
+        spyLocation: SpyLocation?
+    ) {
+        val game = getGame(gameId)
+        val player = game.players.find { player -> player.spies.any { s -> s.id == spyId } }
+        if (spyLocation != null && player != null) {
+            spyLocation.spies.add(SpyLocation.Spy(spyId, player.color.name, player.name))
+            player.spies.removeAll { it.id == spyId }
+        }
+    }
+
+    fun handleRecallSpy(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val body = mapper.getAs<RecallSpy>(action.body)
+        val game = getGame(gameId)
+        val spyLocation = game.spyLocations.find { it.spies.find { spy -> spy.spyId == body.spyId } != null }
+        val otherPlayers = game.players.filterNot { it.name == playerName }
+        recallSpy(gameId, playerName, spyLocation, body.spyId)
+
+        val updatedPlayer = game.players
+            .find { it.name == playerName }
+            ?.let { WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(it)) }
+
+        val updatedLocation = game.spyLocations
+            .find { it.id == spyLocation?.id }
+            ?.let { WSActionResponse.Content(WSActionResponse.Type.UPDATE_SPY_LOCATION, mapper.toTree(it)) }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        otherPlayers.forEach {
+            messages.add(WSActionResponse.Message(WSActionResponse.SinglePlayer(it.name), updatedPlayer))
+            messages.add(WSActionResponse.Message(WSActionResponse.SinglePlayer(it.name), updatedLocation))
+        }
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName recalled a spy"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun recallSpy(
+        gameId: String,
+        playerName: String,
+        spyLocation: SpyLocation?,
+        spyId: String
+    ) {
+        val player = getPlayer(gameId, playerName)
+        if (spyLocation != null) {
+            spyLocation.spies.removeIf { spy -> spy.spyId == spyId }
+            player.spies.add(Spy(spyId))
+        }
+    }
+
     fun handleMoveUnit(
         playerName: String,
         gameId: String,

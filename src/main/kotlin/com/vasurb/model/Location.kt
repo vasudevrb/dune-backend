@@ -6,7 +6,9 @@ data class Location(
     val id: Int
 ) {
     var agents: ArrayList<Agent> = arrayListOf()
+    var controlFlag: ControlFlag? = null
 
+    data class ControlFlag(val controlFlagId: String, val color: String, val playerName: String)
     data class Agent(val agentId: String, val color: String, val playerName: String)
 
     companion object Location {

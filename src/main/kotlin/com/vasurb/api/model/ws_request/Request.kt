@@ -14,8 +14,26 @@ data class PlaceAgent(
     val locationId: Int
 )
 
+data class PlaceSpy(
+    val spyId: String,
+    val spyLocationId: Int
+)
+
+data class PlaceControlFlag(
+    val controlFlagId: String,
+    val locationId: Int
+)
+
 data class RecallAgent(
     val agentId: String
+)
+
+data class RecallSpy(
+    val spyId: String,
+)
+
+data class RecallControlFlag(
+    val controlFlagId: String,
 )
 
 data class MoveCombatUnit(
