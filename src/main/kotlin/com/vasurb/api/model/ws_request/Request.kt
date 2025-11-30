@@ -2,6 +2,7 @@ package com.vasurb.api.model.ws_request
 
 import com.vasurb.model.Card
 import com.vasurb.model.Faction
+import com.vasurb.model.Objective
 import com.vasurb.model.Resource
 
 enum class CombatMovementDestination {
@@ -30,6 +31,28 @@ data class AddOrRemoveCombatUnit(
 data class AddOrRemoveResource(
     val resourceType: Resource,
     val add: Boolean
+)
+
+data class AddOrRemoveVP(
+    val add: Boolean
+)
+
+data class AcquireImperiumCard(
+    val url: String
+)
+
+data class AcquireReserveCard(
+    val url: String
+)
+
+data class GainOrLoseAlliance(
+    val type: Faction,
+    val gained: Boolean
+)
+
+data class GainOrLoseObjective(
+    val type: Objective,
+    val gained: Boolean
 )
 
 data class SetFactionInfluence(

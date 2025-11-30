@@ -3,6 +3,7 @@ package com.vasurb.model
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.vasurb.model.Objective.*
 import com.vasurb.model.ReserveCard.ReserveType
+import kotlin.collections.mapNotNull
 
 data class Game(
     val gameId: String,
@@ -29,9 +30,7 @@ data class Game(
     var nextConflictLevel: Int = conflictCards.peek()?.conflictType?.level ?: 3
 
     val imperiumRow: ArrayList<ImperiumCard> = imperiumCards.draw(5)
-    val reserveRow: ArrayList<ReserveCard> = ReserveType.entries
-        .mapNotNull { reserveCards.getValue(it).removeFirstOrNull() }
-        .toMutableList() as ArrayList<ReserveCard>
+    var reserveRow: ArrayList<ReserveCard> = refreshReserveRow()
 
     @JsonIgnore
     val availableObjectives = arrayListOf(DesertMouse, Ornithopter, Crysknife)
@@ -49,5 +48,11 @@ data class Game(
         val index = players.indexOfFirst { it.name == playerName }
         if (index == -1) players.add(player)
         else players[index] = player
+    }
+
+    fun refreshReserveRow(): ArrayList<ReserveCard> {
+        return ReserveType.entries
+        .mapNotNull { reserveCards.getValue(it).firstOrNull() }
+            .toMutableList() as ArrayList<ReserveCard>
     }
 }

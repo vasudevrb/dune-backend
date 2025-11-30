@@ -45,6 +45,7 @@ class WSController(
             MOVE_COMBAT_UNIT -> gameService.handleMoveUnit(playerName, gameId, action)
             ADD_OR_REMOVE_COMBAT_UNIT -> gameService.handleAddOrRemoveCombatUnit(playerName, gameId, action)
             ADD_OR_REMOVE_RESOURCE -> gameService.handleAddOrRemoveResource(playerName, gameId, action)
+            ADD_OR_REMOVE_VP -> gameService.addOrRemoveVP(playerName, gameId, action)
             END_TURN -> gameService.endTurn(gameId)
             REVEAL -> gameService.reveal(playerName, gameId)
             SET_FACTION_INFLUENCE -> gameService.setFactionInfluence(playerName, gameId, action)
@@ -52,6 +53,10 @@ class WSController(
             UNLOCK_SWORDMASTER -> gameService.unlockSwordmaster(playerName, gameId)
             UNLOCK_MAKER_HOOK -> gameService.unlockMakerHook(playerName, gameId)
             GET_NEXT_CONFLICT -> gameService.getNextConflict(gameId)
+            ACQUIRE_IMPERIUM_CARD -> gameService.acquireImperiumCard(playerName, gameId, action)
+            ACQUIRE_RESERVE_CARD -> gameService.acquireReserveCard(playerName, gameId, action)
+            GAIN_OR_LOSE_ALLIANCE -> gameService.gainOrLoseAlliance(playerName, gameId, action)
+            GAIN_OR_LOSE_OBJECTIVE -> gameService.gainOrLoseObjective(playerName, gameId, action)
             else -> null
         }
 

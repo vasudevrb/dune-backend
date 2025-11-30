@@ -13,6 +13,7 @@ data class Deck<T: Card>(
     fun draw(): T {
         if (cards.isEmpty()) {
             cards.addAll(reshuffleFrom?.shuffled() ?: arrayListOf())
+            reshuffleFrom?.clear()
         }
 
         return cards.removeAt(0)

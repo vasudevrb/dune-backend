@@ -49,6 +49,7 @@ data class Player(
         Faction.SpacingGuild to 0,
         Faction.Emperor to 0,
     )
+    var factionAlliances: ArrayList<Faction> = arrayListOf<Faction>()
 
     var swordmasterUnlocked: Boolean = false
     var makerHookUnlocked: Boolean = false

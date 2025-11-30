@@ -519,6 +519,179 @@ class GameService {
         ))
     }
 
+    fun addOrRemoveVP(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<AddOrRemoveVP>(action.body)
+        if (action.add) player.victoryPoints++
+        else player.victoryPoints--
+
+        val message = WSActionResponse.Message(
+            WSActionResponse.AllPlayersExcept(playerName),
+            WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+        )
+
+        return WSActionResponse(listOf(
+            message,
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName ${if (action.add) "gained" else "lost"} a victory point"))
+                )
+            )
+        ))
+    }
+
+    fun acquireImperiumCard(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<AcquireImperiumCard>(action.body)
+        val card = game.imperiumRow.find { it.url == action.url }
+        val cardIndex = game.imperiumRow.indexOf(card)
+        if (card != null) {
+            player.private.discardedCards.add(card)
+            game.imperiumRow.remove(card)
+            game.imperiumRow.add(cardIndex, game.imperiumCards.draw())
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName acquired a card from the Imperium Row"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun acquireReserveCard(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<AcquireImperiumCard>(action.body)
+        val reserveCard = game.reserveCards.filter { (_, v) -> v.find { it.url == action.url } != null }
+        reserveCard.forEach { (_, v) ->
+            player.private.discardedCards.add(v.removeAt(0))
+        }
+
+        game.reserveRow = game.refreshReserveRow()
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName acquired a card from the Reserve Row"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun gainOrLoseAlliance(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<GainOrLoseAlliance>(action.body)
+        if (action.gained) player.factionAlliances.add(action.type) else player.factionAlliances.remove(action.type)
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName ${if(action.gained) "gained" else "lost"} the ${action.type} alliance"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun gainOrLoseObjective(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<GainOrLoseObjective>(action.body)
+        if (action.gained) player.objectives.add(action.type) else player.objectives.remove(action.type)
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName ${if (action.gained) "gained" else "lost"} the ${action.type} objective"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
     fun endTurn(
         gameId: String
     ): WSActionResponse {
