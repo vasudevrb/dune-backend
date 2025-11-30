@@ -16,6 +16,7 @@ data class WSActionResponse(val messages: List<Message>) {
     enum class Type {
         START_GAME,
         GET_CHARACTER_READY_STATES,
+        UPDATE_GAME,
         UPDATE_PLAYER,
         UPDATE_LOCATION,
         UPDATE_COMBAT,

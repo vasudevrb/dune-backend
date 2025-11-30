@@ -644,6 +644,52 @@ class GameService {
         return WSActionResponse(messages)
     }
 
+    fun unlockMakerHook(
+        playerName: String,
+        gameId: String,
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        player.makerHookUnlocked = true
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName unlocked their maker hook"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun getNextConflict(
+        gameId: String,
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        game.currentConflict = game.conflictCards.draw().url
+        game.nextConflictLevel = game.conflictCards.peek()?.conflictType?.level ?: 0
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
     fun createGame(player: Player): Game {
         val gameId = "dune${games.size + 1}"
         val game = Game(gameId)

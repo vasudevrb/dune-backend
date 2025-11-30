@@ -24,6 +24,8 @@ class Action(
         ADD_OR_REMOVE_RESOURCE,
         END_TURN,
         UNLOCK_SWORDMASTER,
+        UNLOCK_MAKER_HOOK,
+        GET_NEXT_CONFLICT,
         PLACE_SPY,
         RECALL_SPY,
         GAIN_RESOURCE,
