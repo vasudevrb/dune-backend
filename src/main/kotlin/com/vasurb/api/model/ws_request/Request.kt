@@ -1,6 +1,7 @@
 package com.vasurb.api.model.ws_request
 
 import com.vasurb.model.Card
+import com.vasurb.model.Faction
 import com.vasurb.model.Resource
 
 enum class CombatMovementDestination {
@@ -29,6 +30,15 @@ data class AddOrRemoveCombatUnit(
 data class AddOrRemoveResource(
     val resourceType: Resource,
     val add: Boolean
+)
+
+data class SetFactionInfluence(
+    val factionType: Faction,
+    val influenceLevel: Int
+)
+
+data class SetFeydSignetStatus(
+    val status: Int,
 )
 
 data class CardAction(

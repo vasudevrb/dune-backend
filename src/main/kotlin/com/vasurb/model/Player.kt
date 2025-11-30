@@ -43,7 +43,7 @@ data class Player(
         Resource.spice to 0,
         Resource.solari to 0,
     )
-    var factionInfluences: Map<Faction, Int> = mapOf(
+    var factionInfluences: MutableMap<Faction, Int> = mutableMapOf(
         Faction.Fremen to 0,
         Faction.BeneGesserit to 0,
         Faction.SpacingGuild to 0,

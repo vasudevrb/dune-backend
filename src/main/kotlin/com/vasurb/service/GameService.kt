@@ -570,6 +570,52 @@ class GameService {
         return WSActionResponse(messages)
     }
 
+    fun setFactionInfluence(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<SetFactionInfluence>(action.body)
+
+        player.factionInfluences[action.factionType] = action.influenceLevel
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName set their ${action.factionType} influence to  ${action.influenceLevel}"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun setFeydSignetStatus(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<SetFeydSignetStatus>(action.body)
+        val character = player.character
+        if (character != null) {
+            character.additionalInfo.signetStatus = action.status
+        }
+
+        return WSActionResponse(listOf())
+    }
+
     fun createGame(player: Player): Game {
         val gameId = "dune${games.size + 1}"
         val game = Game(gameId)

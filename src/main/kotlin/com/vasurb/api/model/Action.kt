@@ -18,6 +18,8 @@ class Action(
         PLACE_AGENT,
         RECALL_AGENT,
         MOVE_COMBAT_UNIT,
+        SET_FACTION_INFLUENCE,
+        SET_FEYD_SIGNET_STATUS,
         ADD_OR_REMOVE_COMBAT_UNIT,
         ADD_OR_REMOVE_RESOURCE,
         END_TURN,

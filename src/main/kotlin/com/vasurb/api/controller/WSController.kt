@@ -47,6 +47,8 @@ class WSController(
             ADD_OR_REMOVE_RESOURCE -> gameService.handleAddOrRemoveResource(playerName, gameId, action)
             END_TURN -> gameService.endTurn(gameId)
             REVEAL -> gameService.reveal(playerName, gameId)
+            SET_FACTION_INFLUENCE -> gameService.setFactionInfluence(playerName, gameId, action)
+            SET_FEYD_SIGNET_STATUS -> gameService.setFeydSignetStatus(playerName, gameId, action)
             else -> null
         }
 
