@@ -46,6 +46,7 @@ class WSController(
             ADD_OR_REMOVE_COMBAT_UNIT -> gameService.handleAddOrRemoveCombatUnit(playerName, gameId, action)
             ADD_OR_REMOVE_RESOURCE -> gameService.handleAddOrRemoveResource(playerName, gameId, action)
             END_TURN -> gameService.endTurn(gameId)
+            REVEAL -> gameService.reveal(playerName, gameId)
             else -> null
         }
 

@@ -7,3 +7,8 @@ data class CardUsed(
     val playerName: String,
     val type: Action.Type
 )
+
+data class RevealCards(
+    val urls: List<String>,
+    val playerName: String
+)

@@ -21,6 +21,7 @@ data class WSActionResponse(val messages: List<Message>) {
         UPDATE_COMBAT,
         UPDATE_RESOURCES,
         CARD_USED,
+        REVEAL_CARDS,
         SHOW_NOTIFICATION,
     }
 

@@ -539,6 +539,37 @@ class GameService {
         return WSActionResponse(messages)
     }
 
+    fun reveal(
+        playerName: String,
+        gameId: String,
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val inHandCardUrls = player.private.inHandCards.map { it.url }
+
+        val iterator = player.private.inHandCards.iterator()
+
+        while (iterator.hasNext()) {
+            val card = iterator.next()
+            useCard(card, CardAction(card.url, Card.Source.HAND), player)
+            iterator.remove()
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.REVEAL_CARDS, mapper.toTree(RevealCards(inHandCardUrls, playerName)))
+            )
+        )
+
+        messages.add(WSActionResponse.Message(
+            WSActionResponse.SinglePlayer(playerName),
+            WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+        ))
+
+        return WSActionResponse(messages)
+    }
+
     fun createGame(player: Player): Game {
         val gameId = "dune${games.size + 1}"
         val game = Game(gameId)
