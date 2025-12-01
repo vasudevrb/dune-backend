@@ -11,8 +11,8 @@ data class Location(
     data class ControlFlag(val controlFlagId: String, val color: String, val playerName: String)
     data class Agent(val agentId: String, val color: String, val playerName: String)
 
-    companion object Location {
-        val LOCATIONS = listOf(
+    class All {
+        fun get(): List<Location> = listOf(
             Location("Sardaukar", 1),
             Location("Dutiful Service", 2),
             Location("Heighliner", 3),

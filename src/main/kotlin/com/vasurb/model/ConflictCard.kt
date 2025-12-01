@@ -18,16 +18,19 @@ data class ConflictCard(
             val level1 = CardsUrlRetriever
                 .cardImageUrls[Key(Card.Type.CONFLICT, ConflictType.LEVEL_1.name)]
                 ?.map { url -> ConflictCard(url, ConflictType.LEVEL_1) }
+                ?.shuffled()
                 ?.toMutableList() as ArrayList<ConflictCard>
 
             val level2 = CardsUrlRetriever
                 .cardImageUrls[Key(Card.Type.CONFLICT, ConflictType.LEVEL_2.name)]
                 ?.map { url -> ConflictCard(url, ConflictType.LEVEL_2) }
+                ?.shuffled()
                 ?.toMutableList() as ArrayList<ConflictCard>
 
             val level3 = CardsUrlRetriever
                 .cardImageUrls[Key(Card.Type.CONFLICT, ConflictType.LEVEL_3.name)]
                 ?.map { url -> ConflictCard(url, ConflictType.LEVEL_3) }
+                ?.shuffled()
                 ?.toMutableList() as ArrayList<ConflictCard>
 
             return level1.take(1)

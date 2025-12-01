@@ -62,7 +62,6 @@ class WSController(
             GAIN_OR_LOSE_ALLIANCE -> gameService.gainOrLoseAlliance(playerName, gameId, action)
             GAIN_OR_LOSE_OBJECTIVE -> gameService.gainOrLoseObjective(playerName, gameId, action)
             CLEAR_ROUND -> gameService.clearRound(gameId)
-            else -> null
         }
 
         response?.messages?.forEach { message ->

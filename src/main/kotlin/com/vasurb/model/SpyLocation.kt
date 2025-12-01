@@ -8,8 +8,8 @@ data class SpyLocation(
 
     data class Spy(val spyId: String, val color: String, val playerName: String)
 
-    companion object {
-        val SPY_LOCATIONS = listOf(
+    class All {
+        fun get(): List<SpyLocation> = listOf(
             SpyLocation(1, listOf(1, 2)),
             SpyLocation(2, listOf(3, 4)),
             SpyLocation(3, listOf(5, 6)),
