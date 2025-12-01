@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-@CrossOrigin(origins = ["https://dune-frontend-eff2b3.gitlab.io"])
+@CrossOrigin(origins = ["https://dune-frontend-eff2b3.gitlab.io", "http://localhost:5173"])
 @RestController
 class GameController(val gameService: GameService) {
 

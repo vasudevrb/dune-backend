@@ -1094,6 +1094,38 @@ class GameService {
         return WSActionResponse(messages)
     }
 
+    fun setBonusSpice(
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val action = mapper.getAs<BonusSpiceAction>(action.body)
+
+        when(action.locationId) {
+            9 -> if(action.add) game.bonusSpice.deepDesert++ else game.bonusSpice.deepDesert--
+            10 -> if(action.add) game.bonusSpice.haggaBasin++ else game.bonusSpice.haggaBasin--
+            11 -> if(action.add) game.bonusSpice.imperialBasin++ else game.bonusSpice.imperialBasin--
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        val msg = "Bonus spice added at ${game.locations.find { it.id == action.locationId }?.name}"
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION, mapper.toTree(Notification(msg)))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
     fun createGame(player: Player): Game {
         val gameId = "dune${games.size + 1}"
         val game = Game(gameId)

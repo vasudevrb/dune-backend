@@ -82,6 +82,11 @@ data class SetFeydSignetStatus(
     val status: Int,
 )
 
+data class BonusSpiceAction(
+    val locationId: Int,
+    val add: Boolean
+)
+
 data class CardAction(
     val url: String,
     val source: Card.Source

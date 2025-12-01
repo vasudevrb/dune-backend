@@ -39,6 +39,7 @@ class Action(
         DRAW_CARD,
         DISCARD_CARD,
         TRASH_CARD,
+        SET_BONUS_SPICE,
         GAIN_OR_LOSE_ALLIANCE,
         GAIN_OR_LOSE_OBJECTIVE,
         CLEAR_ROUND

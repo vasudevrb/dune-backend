@@ -14,7 +14,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.CrossOrigin
 import java.security.Principal
 
-@CrossOrigin(origins = ["https://dune-frontend-eff2b3.gitlab.io"])
+@CrossOrigin(origins = ["https://dune-frontend-eff2b3.gitlab.io", "http://localhost:5173"])
 @Controller
 class WSController(
     val gameService: GameService,
@@ -57,6 +57,7 @@ class WSController(
             UNLOCK_SWORDMASTER -> gameService.unlockSwordmaster(playerName, gameId)
             UNLOCK_MAKER_HOOK -> gameService.unlockMakerHook(playerName, gameId)
             GET_NEXT_CONFLICT -> gameService.getNextConflict(gameId)
+            SET_BONUS_SPICE -> gameService.setBonusSpice(gameId, action)
             ACQUIRE_IMPERIUM_CARD -> gameService.acquireImperiumCard(playerName, gameId, action)
             ACQUIRE_RESERVE_CARD -> gameService.acquireReserveCard(playerName, gameId, action)
             GAIN_OR_LOSE_ALLIANCE -> gameService.gainOrLoseAlliance(playerName, gameId, action)

@@ -12,6 +12,7 @@ data class Game(
     val players: ArrayList<Player> = arrayListOf()
 ) {
 
+    val bonusSpice: BonusSpice = BonusSpice()
     @JsonIgnore
     val imperiumCards: Deck<ImperiumCard> = Deck(ImperiumCard.getAll())
     @JsonIgnore
