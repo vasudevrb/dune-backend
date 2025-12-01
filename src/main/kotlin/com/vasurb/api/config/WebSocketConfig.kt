@@ -20,7 +20,7 @@ class WebSocketConfig(
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry.addEndpoint("/game")
-            .setAllowedOriginPatterns("*")
+            .setAllowedOrigins("http://localhost:5173")
             .withSockJS()
     }
 
