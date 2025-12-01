@@ -7,8 +7,8 @@ import kotlin.collections.mapNotNull
 
 data class Game(
     val gameId: String,
-    val locations: List<Location> = Location.LOCATIONS,
-    val spyLocations: List<SpyLocation> = SpyLocation.SPY_LOCATIONS,
+    val locations: List<Location> = Location.LOCATIONS.toMutableList(),
+    val spyLocations: List<SpyLocation> = SpyLocation.SPY_LOCATIONS.toMutableList(),
     val players: ArrayList<Player> = arrayListOf()
 ) {
 
