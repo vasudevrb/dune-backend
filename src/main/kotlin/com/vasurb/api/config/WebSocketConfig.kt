@@ -20,7 +20,7 @@ class WebSocketConfig(
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry.addEndpoint("/game")
-            .setAllowedOrigins("http://localhost:5173")
+            .setAllowedOrigins("https://dune-frontend-eff2b3.gitlab.io")
             .withSockJS()
     }
 

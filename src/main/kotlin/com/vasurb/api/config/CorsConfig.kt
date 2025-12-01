@@ -10,7 +10,7 @@ import org.springframework.web.servlet.resource.PathResourceResolver
 class CorsConfig : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
-            .allowedOrigins("http://localhost:5173")
+            .allowedOrigins("https://dune-frontend-eff2b3.gitlab.io")
             .allowedMethods("GET", "POST")
             .allowedHeaders("*")
             .allowCredentials(true)
