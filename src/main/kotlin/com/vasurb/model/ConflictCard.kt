@@ -13,7 +13,7 @@ data class ConflictCard(
         LEVEL_1(1), LEVEL_2(2), LEVEL_3(3)
     }
 
-    companion object{
+    class All {
         fun getConflicts(): ArrayList<ConflictCard>{
             val level1 = CardsUrlRetriever
                 .cardImageUrls[Key(Card.Type.CONFLICT, ConflictType.LEVEL_1.name)]
@@ -38,5 +38,6 @@ data class ConflictCard(
                 .plus(level3)
                 .toMutableList() as ArrayList<ConflictCard>
         }
+
     }
 }

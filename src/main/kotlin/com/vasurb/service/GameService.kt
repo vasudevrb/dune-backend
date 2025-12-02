@@ -818,6 +818,84 @@ class GameService {
         return WSActionResponse(messages)
     }
 
+    fun acquireContract(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse{
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<AcquireContract>(action.body)
+
+        val index = game.currentContracts.indexOf(action.url)
+        if (index != 1) {
+            player.contracts.add(Contract(action.url))
+            game.currentContracts.add(index, game.contracts.draw().url)
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName acquired a contract"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun completeContract(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<CompleteContract>(action.body)
+
+        val contract = player.contracts.find { it.url == action.url }
+        val index = player.contracts.indexOf(contract)
+        if (index != 1) {
+            contract?.completed = false
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName completed a contract"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
     fun gainOrLoseAlliance(
         playerName: String,
         gameId: String,

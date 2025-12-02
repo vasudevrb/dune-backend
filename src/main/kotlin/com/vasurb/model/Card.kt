@@ -5,7 +5,7 @@ interface Card {
     val type: Type
 
     enum class Type {
-        IMPERIUM, INTRIGUE, CONFLICT, STARTER, RESERVE
+        IMPERIUM, INTRIGUE, CONFLICT, STARTER, RESERVE, CONTRACT
     }
 
     enum class Source {

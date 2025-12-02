@@ -14,14 +14,17 @@ data class Game(
 
     val bonusSpice: BonusSpice = BonusSpice()
     @JsonIgnore
-    val imperiumCards: Deck<ImperiumCard> = Deck(ImperiumCard.getAll())
+    val imperiumCards: Deck<ImperiumCard> = Deck(ImperiumCard.All().get())
     @JsonIgnore
-    val reserveCards: Map<ReserveType, ArrayList<ReserveCard>> = ReserveCard.getAll()
+    val reserveCards: Map<ReserveType, ArrayList<ReserveCard>> = ReserveCard.All().get()
 
     @JsonIgnore
-    val intrigueCards: Deck<IntrigueCard> = Deck(IntrigueCard.getAll())
+    val intrigueCards: Deck<IntrigueCard> = Deck(IntrigueCard.All().get())
     @JsonIgnore
-    val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.getConflicts(), shuffleAtStart = false)
+    val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.All().getConflicts(), shuffleAtStart = false)
+
+    @JsonIgnore
+    val contracts: Deck<ContractCard> = Deck(ContractCard.All().get())
 
     var isStarted = false
     var currentPlayer: String? = null
@@ -29,6 +32,8 @@ data class Game(
 
     var currentConflict: String = conflictCards.draw().url
     var nextConflictLevel: Int = conflictCards.peek()?.conflictType?.level ?: 3
+
+    var currentContracts = contracts.draw(2).map { it.url }.toMutableList() as ArrayList<String>
 
     val imperiumRow: ArrayList<ImperiumCard> = imperiumCards.draw(5)
     var reserveRow: ArrayList<ReserveCard> = refreshReserveRow()

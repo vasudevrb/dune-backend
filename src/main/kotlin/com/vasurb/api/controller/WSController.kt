@@ -62,6 +62,8 @@ class WSController(
             ACQUIRE_RESERVE_CARD -> gameService.acquireReserveCard(playerName, gameId, action)
             GAIN_OR_LOSE_ALLIANCE -> gameService.gainOrLoseAlliance(playerName, gameId, action)
             GAIN_OR_LOSE_OBJECTIVE -> gameService.gainOrLoseObjective(playerName, gameId, action)
+            ACQUIRE_CONTRACT -> gameService.acquireContract(playerName, gameId, action)
+            COMPLETE_CONTRACT -> gameService.completeContract(playerName, gameId, action)
             CLEAR_ROUND -> gameService.clearRound(gameId)
         }
 

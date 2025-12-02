@@ -63,6 +63,14 @@ data class AcquireReserveCard(
     val url: String
 )
 
+data class AcquireContract(
+    val url: String
+)
+
+data class CompleteContract(
+    val url: String
+)
+
 data class GainOrLoseAlliance(
     val type: Faction,
     val gained: Boolean

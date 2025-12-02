@@ -13,8 +13,8 @@ data class ReserveCard(
         THE_SPICE_MUST_FLOW, PREPARE_THE_WAY
     }
 
-    companion object {
-        fun getAll(): Map<ReserveType, ArrayList<ReserveCard>> {
+    class All {
+        fun get(): Map<ReserveType, ArrayList<ReserveCard>> {
             return ReserveType.entries.associateWith { type ->
                 CardsUrlRetriever
                     .cardImageUrls[Key(Card.Type.RESERVE, type.name)]

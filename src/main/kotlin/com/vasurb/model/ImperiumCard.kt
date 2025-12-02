@@ -79,8 +79,8 @@ data class ImperiumCard(
 
     override val type: Card.Type = Card.Type.IMPERIUM
 
-    companion object {
-        fun getAll(): ArrayList<ImperiumCard> {
+    class All {
+        fun get(): ArrayList<ImperiumCard> {
             val cards = CardsUrlRetriever.cardImageUrls[Key(Card.Type.IMPERIUM)]
                 ?.map { url -> ImperiumCard(url) }
                 ?.toMutableList() as ArrayList<ImperiumCard>

@@ -8,8 +8,8 @@ data class IntrigueCard(
 ): Card {
     override val type: Card.Type = Card.Type.INTRIGUE
 
-    companion object {
-        fun getAll(): ArrayList<IntrigueCard> {
+    class All {
+        fun get(): ArrayList<IntrigueCard> {
             return CardsUrlRetriever.cardImageUrls[Key(Card.Type.INTRIGUE)]
                 ?.map { url -> IntrigueCard(url) }
                 ?.toMutableList() as ArrayList<IntrigueCard>

@@ -32,6 +32,8 @@ data class Player(
         ControlFlag("control_flag-${name}#3"),
     )
 
+    val contracts = arrayListOf<Contract>()
+
     @get:JsonProperty
     var victoryPoints: Int = 0
 
