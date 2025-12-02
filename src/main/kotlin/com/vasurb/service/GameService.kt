@@ -145,6 +145,10 @@ class GameService {
                 ),
                 WSActionResponse.Message(
                     WSActionResponse.AllPlayersExcept(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+                ),
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayersExcept(playerName),
                     WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION, mapper.toTree(Notification(message)))
                 )
             )
@@ -166,6 +170,10 @@ class GameService {
                 WSActionResponse.Message(
                     WSActionResponse.SinglePlayer(playerName),
                     WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+                ),
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayersExcept(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
                 ),
                 WSActionResponse.Message(
                     WSActionResponse.AllPlayersExcept(playerName),
@@ -216,12 +224,26 @@ class GameService {
                     WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(it, includePrivate = true))
                 )
             )
+
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayersExcept(it.name),
+                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+                )
+            )
         }
 
         messages.add(
             WSActionResponse.Message(
                 WSActionResponse.AllPlayersExcept(playerName),
                 WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION, mapper.toTree(Notification(notifyMessage)))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
             )
         )
 
@@ -267,6 +289,13 @@ class GameService {
                 WSActionResponse.Message(
                     WSActionResponse.AllPlayers,
                     WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(body.url, playerName, action.type)))
+                )
+            )
+
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayersExcept(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
                 )
             )
         }
@@ -773,6 +802,13 @@ class GameService {
             )
         )
 
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
         return WSActionResponse(messages)
     }
 
@@ -815,6 +851,13 @@ class GameService {
             )
         )
 
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
         return WSActionResponse(messages)
     }
 
@@ -828,8 +871,9 @@ class GameService {
         val action = mapper.getAs<AcquireContract>(action.body)
 
         val index = game.currentContracts.indexOf(action.url)
-        if (index != 1) {
+        if (index != -1) {
             player.contracts.add(Contract(action.url))
+            game.currentContracts.removeAt(index)
             game.currentContracts.add(index, game.contracts.draw().url)
         }
 
@@ -845,6 +889,13 @@ class GameService {
             WSActionResponse.Message(
                 WSActionResponse.AllPlayers,
                 WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
             )
         )
 
@@ -872,7 +923,7 @@ class GameService {
         val contract = player.contracts.find { it.url == action.url }
         val index = player.contracts.indexOf(contract)
         if (index != 1) {
-            contract?.completed = false
+            contract?.completed = action.completed
         }
 
         val messages = arrayListOf<WSActionResponse.Message>()
@@ -890,6 +941,13 @@ class GameService {
                     WSActionResponse.Type.SHOW_NOTIFICATION,
                     mapper.toTree(Notification("$playerName completed a contract"))
                 )
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
             )
         )
 

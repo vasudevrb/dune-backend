@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.treeToValue
+import com.vasurb.model.Game
+import com.vasurb.model.Player
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import java.security.MessageDigest
 import java.time.Instant
@@ -57,7 +59,32 @@ object Util {
             }
         }
 
+        // Add extra fields ONLY when T is a specific type
+        if (obj is Player && tree is ObjectNode) {
+            addCardStats(obj, tree)
+        } else if (obj is Game && tree is ObjectNode) {
+            val playersNode = tree["players"] as ArrayNode
+            for (playerNode in playersNode) {
+                val player = obj.players.find { it.name == playerNode.get("name").asText() }
+                player?.let {addCardStats(it, playerNode as ObjectNode)}
+            }
+        }
+
         return tree
+    }
+
+    fun addCardStats(player: Player, tree: ObjectNode) {
+        val numCards = tree.objectNode().apply {
+            put("inHand", player.private.inHandCards.size)
+            put("inPlay", player.private.inPlayCards.size)
+            put("inDiscardPile", player.private.discardedCards.size)
+            put("inDrawPile", player.private.drawPile.size())
+            put("intrigues", player.private.intrigueCards.size)
+            put("openContracts", player.contracts.filter { !it.completed }.size)
+            put("completedContracts", player.contracts.filter { it.completed }.size)
+        }
+
+        tree.set<ObjectNode>("numCards", numCards)
     }
 
     fun SimpMessagingTemplate.convertAndSendToUser(user: String, destination: String, payload: Any?) {

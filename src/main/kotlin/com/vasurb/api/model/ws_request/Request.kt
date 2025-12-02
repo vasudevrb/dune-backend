@@ -68,7 +68,8 @@ data class AcquireContract(
 )
 
 data class CompleteContract(
-    val url: String
+    val url: String,
+    val completed: Boolean
 )
 
 data class GainOrLoseAlliance(
