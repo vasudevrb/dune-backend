@@ -1058,6 +1058,15 @@ class GameService {
             it.private.inHandCards.addAll(it.private.drawPile.draw(5))
         }
 
+        game.locations.forEach { location ->
+            val agentIterator = location.agents.iterator()
+            while (agentIterator.hasNext()) {
+                val agent = agentIterator.next()
+                getPlayer(gameId, agent.playerName).agents.add(Agent(agent.agentId))
+                agentIterator.remove()
+            }
+        }
+
         val messages = arrayListOf<WSActionResponse.Message>()
         messages.add(
             WSActionResponse.Message(
