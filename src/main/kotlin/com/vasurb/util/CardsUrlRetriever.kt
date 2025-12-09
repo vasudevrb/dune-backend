@@ -2,8 +2,6 @@ package com.vasurb.util
 
 import com.vasurb.model.Card
 import com.vasurb.model.ConflictCard
-import com.vasurb.model.PlayableCharacter
-import com.vasurb.model.PlayableCharacter.*
 import com.vasurb.model.ReserveCard
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
@@ -16,11 +14,10 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
     data class Key(
         val first: Card.Type,
         val second: String? = null,
-    ) {
-    }
+    )
 
     override fun run(vararg args: String?) {
-        val resolver = PathMatchingResourcePatternResolver();
+        val resolver = PathMatchingResourcePatternResolver()
 
         Card.Type.entries
             .map { cardType ->
