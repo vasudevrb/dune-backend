@@ -34,6 +34,20 @@ class CharacterUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Co
             GURNEY_HALLECK -> listOf("gurney_halleck")
             EMPEROR_SHADDAM -> listOf("shaddam_corrino")
             PRINCESS_IRULAN -> listOf("princess_irulan")
+            STABAN_TUEK -> listOf("staban_tuek")
+            ARIANA_THORVALD -> listOf("ariana_thorvald")
+            ARMAND_ECAZ -> listOf("armand_ecaz")
+            GLOSSU_RABBAN -> listOf("glossu_rabban")
+            HASIMIR_FENRING -> listOf("hasimir_fenring")
+            HELEN_MOHAIM -> listOf("helen_mohaim")
+            HELENA_RICHESE -> listOf("helena_richese")
+            ILBAN_RICHESE -> listOf("ilban_richese")
+            LETO_ATREIDES -> listOf("leto_atreides")
+            LIET_KYNES -> listOf("liet_kynes")
+            MEMNON_THORVALD -> listOf("memnon_thorvald")
+            PAUL_ATREIDES -> listOf("paul_atreides")
+            VLADIMIR_HARKONNEN -> listOf("vladimir_harkonnen")
+            YUNA_MORITANI -> listOf("yuna_moritani")
         }
 
         return fileNames.map { name ->
@@ -51,6 +65,20 @@ class CharacterUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Co
             GURNEY_HALLECK -> ("gurney_halleck")
             EMPEROR_SHADDAM -> ("shaddam_corrino")
             PRINCESS_IRULAN -> ("princess_irulan")
+            STABAN_TUEK -> ("staban_tuek")
+            ARIANA_THORVALD -> ("ariana_thorvald")
+            ARMAND_ECAZ -> ("armand_ecaz")
+            GLOSSU_RABBAN -> ("glossu_rabban")
+            HASIMIR_FENRING -> ("hasimir_fenring")
+            HELEN_MOHAIM -> ("helen_mohaim")
+            HELENA_RICHESE -> ("helena_richese")
+            ILBAN_RICHESE -> ("ilban_richese")
+            LETO_ATREIDES -> ("leto_atreides")
+            LIET_KYNES -> ("liet_kynes")
+            MEMNON_THORVALD -> ("memnon_thorvald")
+            PAUL_ATREIDES -> ("paul_atreides")
+            VLADIMIR_HARKONNEN -> ("vladimir_harkonnen")
+            YUNA_MORITANI -> ("yuna_moritani")
         }
 
         return serverUrl + "/avatars/${fileName}.jpg"

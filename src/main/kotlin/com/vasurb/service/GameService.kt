@@ -954,6 +954,34 @@ class GameService {
         return WSActionResponse(messages)
     }
 
+    fun breakShieldWall(
+        playerName: String,
+        gameId: String
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        game.shieldWallBroken = true
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName destroyed the shield wall."))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
     fun gainOrLoseAlliance(
         playerName: String,
         gameId: String,

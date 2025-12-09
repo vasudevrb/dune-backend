@@ -42,6 +42,7 @@ class Action(
         SET_BONUS_SPICE,
         GAIN_OR_LOSE_ALLIANCE,
         GAIN_OR_LOSE_OBJECTIVE,
+        BREAK_SHIELD_WALL,
         ACQUIRE_CONTRACT,
         COMPLETE_CONTRACT,
         CLEAR_ROUND

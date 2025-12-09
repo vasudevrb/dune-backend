@@ -64,6 +64,7 @@ class WSController(
             GAIN_OR_LOSE_OBJECTIVE -> gameService.gainOrLoseObjective(playerName, gameId, action)
             ACQUIRE_CONTRACT -> gameService.acquireContract(playerName, gameId, action)
             COMPLETE_CONTRACT -> gameService.completeContract(playerName, gameId, action)
+            BREAK_SHIELD_WALL -> gameService.breakShieldWall(playerName, gameId)
             CLEAR_ROUND -> gameService.clearRound(gameId)
         }
 

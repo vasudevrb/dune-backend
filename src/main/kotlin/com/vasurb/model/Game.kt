@@ -29,6 +29,7 @@ data class Game(
     var isStarted = false
     var currentPlayer: String? = null
     var firstPlayer: String? = null
+    var shieldWallBroken = false
 
     var currentConflict: String = conflictCards.draw().url
     var nextConflictLevel: Int = conflictCards.peek()?.conflictType?.level ?: 3
