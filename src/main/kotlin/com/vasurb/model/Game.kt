@@ -46,8 +46,16 @@ data class Game(
     @JsonIgnore
     val presentedCharacters = mutableMapOf<String, List<PlayableCharacter>>()
     @JsonIgnore
-    val availableColors: ArrayList<Color> = arrayListOf(Color.RED, Color.BLUE, Color.GREEN)
+    val availableColors: ArrayList<Color> = arrayListOf(Color.GOLD, Color.RED, Color.BLUE, Color.GREEN)
         .shuffled().toMutableList() as ArrayList<Color>
+
+    @JsonIgnore
+    val initialTurnOrder: MutableMap<Int, String> = mutableMapOf(
+        1 to "",
+        2 to "",
+        3 to "",
+        4 to ""
+    )
 
     fun getPlayerByName(playerName: String): Player? = players.firstOrNull { it.name == playerName }
 

@@ -29,12 +29,8 @@ class GameController(val gameService: GameService) {
 
     @GetMapping("/create-game")
     fun createGame(@RequestParam playerName: String): CreateGameResponse {
-        val game = gameService.createGame(Player(
-            playerName,
-            isHost = true,
-            color = Color.GOLD
-        ))
-        return CreateGameResponse(game.gameId)
+        val game = gameService.createGame(playerName)
+        return CreateGameResponse(game.gameId, gameService.getTurnOrder(game.gameId, playerName))
     }
 
     @GetMapping("/join-game")
@@ -48,13 +44,11 @@ class GameController(val gameService: GameService) {
             game.isStarted -> CANNOT_JOIN_GAME_STARTED
             game.players.size >= 4 -> CANNOT_JOIN_MAX_PLAYERS
             else -> {
-                val color = game.availableColors.removeAt(0)
-                val newPlayer = Player(playerName, color = color)
-                gameService.addPlayer(newPlayer, gameId).gameId
+                gameService.addPlayer(playerName, gameId).gameId
                 JoinGameResponse.JoinGameState.JOINED
             }
         }
-        return JoinGameResponse(gameId, joinState)
+        return JoinGameResponse(gameId, joinState, gameService.getTurnOrder(gameId, playerName))
     }
 
     @PostMapping("/characters")

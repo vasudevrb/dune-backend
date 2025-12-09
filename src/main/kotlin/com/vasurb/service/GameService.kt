@@ -24,25 +24,10 @@ class GameService {
         action: WSActionRequest
     ): WSActionResponse {
         val body = mapper.getAs<AddToGame>(action.body)
-        val game = getGame(gameId)
         val player = getPlayer(gameId, body.playerName)
-        assignObjective(game, player)
 
         player.readyState = "READY"
         return getPlayerReadyStates(gameId)
-    }
-
-    private fun assignObjective(game: Game, player: Player) {
-        if (game.players.size <= 3) {
-            player.objectives.add(game.availableObjectives.getRandomAndRemove())
-        } else {
-            val FourPObjectives = arrayListOf(DesertMouse, Ornithopter)
-            player.objectives.add(FourPObjectives.getRandomAndRemove())
-
-            val crysKnifePlayer = game.players
-                .find { it.objectives.contains(Crysknife) }
-            crysKnifePlayer?.objectives = arrayListOf(FourPObjectives[0])
-        }
     }
 
     fun getPlayerReadyStates(gameId: String): WSActionResponse {
@@ -52,7 +37,7 @@ class GameService {
             players.forEach {
                 add(mapper.createObjectNode().apply {
                     put("playerName", it.name)
-                    put("color", it.color.name)
+                    put("color", it.color?.name)
                     put("characterName", it.character?.name)
                     putArray("characterUrls").apply {
                         it.character?.let { character -> character.urls.forEach { url -> add(url) } }
@@ -80,8 +65,8 @@ class GameService {
         val game = getGame(gameId)
         game.isStarted = true
 
-        val desertMousePlayers = game.players.filter { it.objectives.contains(DesertMouse) }
-        val firstPlayer = desertMousePlayers.random()
+        game.players.sortBy { getTurnOrder(gameId, it.name) }
+        val firstPlayer = game.players[0]
         game.players.remove(firstPlayer)
         game.players.add(0, firstPlayer)
 
@@ -1299,24 +1284,58 @@ class GameService {
         return WSActionResponse(messages)
     }
 
-    fun createGame(player: Player): Game {
+    fun createGame(playerName: String): Game {
         val gameId = "dune${games.size + 1}"
         val game = Game(gameId)
         games[gameId] = game
-        game.addOrUpdatePlayer(player.name, player)
+
+        addPlayer(playerName, gameId, isHost = true)
         return game
     }
 
-    fun addPlayer(player: Player, gameId: String): Game {
+    fun addPlayer(playerName: String, gameId: String, isHost: Boolean = false): Game {
         val game = getGame(gameId)
-        game.addOrUpdatePlayer(player.name, player)
+
+        val newPlayer = Player(playerName, isHost = isHost)
+
+        newPlayer.color = game.availableColors.removeAt(0)
+        val objective = getObjective(game)
+        newPlayer.objectives.add(objective)
+
+        if (game.initialTurnOrder.getValue(1).isEmpty() && objective == DesertMouse) {
+            game.initialTurnOrder[1] = playerName
+        } else {
+            val availableTurnOrders = game.initialTurnOrder.filter { it.value.isEmpty() }.keys
+            game.initialTurnOrder[availableTurnOrders.random()] = playerName
+        }
+
+        game.addOrUpdatePlayer(playerName, newPlayer)
         return game
+    }
+
+    private fun getObjective(game: Game): Objective {
+        if (game.players.size <= 2) {
+            return game.availableObjectives.getRandomAndRemove()
+        } else {
+            val FourPObjectives = arrayListOf(DesertMouse, Ornithopter)
+
+            val crysknifePlayer = game.players.find { it.objectives.contains(Crysknife) }
+            crysknifePlayer?.objectives = arrayListOf(FourPObjectives.getRandomAndRemove())
+
+            return FourPObjectives[0]
+        }
     }
 
     fun updatePlayer(player: Player, gameId: String): Game {
         val game = getGame(gameId)
         game.addOrUpdatePlayer(player.name, player)
         return game
+    }
+
+    fun getTurnOrder(gameId: String, playerName: String): Int {
+        return getGame(gameId).initialTurnOrder.entries
+            .find { it.value == playerName }
+            ?.key ?: 0
     }
 
     fun getPlayer(gameId: String, playerName: String): Player {

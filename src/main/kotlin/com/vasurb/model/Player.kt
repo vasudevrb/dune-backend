@@ -5,11 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class Player(
     val name: String,
-    val isHost: Boolean = false,
-    val color: Color
+    val isHost: Boolean = false
 ) {
     @get:JsonProperty
     var character: CharacterModel? = null
+
+    var color: Color = Color.GOLD
 
     @get:JsonProperty
     val agents = arrayListOf(
