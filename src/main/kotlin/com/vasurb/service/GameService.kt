@@ -1,5 +1,6 @@
 package com.vasurb.service
 
+import com.vasurb.api.controller.GameController.Companion.NUM_PICKABLE_CHARACTERS
 import com.vasurb.api.model.Action.Type.*
 import com.vasurb.api.model.ws_request.*
 import com.vasurb.exception.ExpiredGameException
@@ -1284,19 +1285,19 @@ class GameService {
         return WSActionResponse(messages)
     }
 
-    fun createGame(playerName: String): Game {
+    fun createGame(playerName: String, includeRivals: Boolean): Game {
         val gameId = "dune${games.size + 1}"
         val game = Game(gameId)
+        game.containsRivals = includeRivals
         games[gameId] = game
 
         addPlayer(playerName, gameId, isHost = true)
         return game
     }
 
-    fun addPlayer(playerName: String, gameId: String, isHost: Boolean = false): Game {
+    fun addPlayer(playerName: String, gameId: String, isHost: Boolean = false, isRival: Boolean = false): Game {
         val game = getGame(gameId)
-
-        val newPlayer = Player(playerName, isHost = isHost)
+        val newPlayer = Player(playerName, isHost = isHost, isRival = isRival)
 
         newPlayer.color = game.availableColors.removeAt(0)
         val objective = getObjective(game)
@@ -1336,6 +1337,21 @@ class GameService {
         return getGame(gameId).initialTurnOrder.entries
             .find { it.value == playerName }
             ?.key ?: 0
+    }
+
+    fun getPresentableCharacters(playerName: String, gameId: String): List<PlayableCharacter> {
+        val game = getGame(gameId)
+        val characters = game.presentedCharacters[playerName] ?: game.availableCharacters
+            .shuffled()
+            .take(if(game.containsRivals) game.availableCharacters.size else NUM_PICKABLE_CHARACTERS)
+
+        characters.forEach { game.availableCharacters.remove(it) }
+        if (!game.containsRivals) { game.presentedCharacters[playerName] = characters }
+        return characters
+    }
+
+    fun getRivals(): List<RivalCharacter> {
+        return RivalCharacter.entries.toMutableList()
     }
 
     fun getPlayer(gameId: String, playerName: String): Player {

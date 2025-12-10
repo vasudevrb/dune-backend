@@ -2,7 +2,6 @@ package com.vasurb.api.model
 
 import com.fasterxml.jackson.annotation.JsonValue
 import com.vasurb.model.PlayableCharacter
-import com.vasurb.model.PlayableCharacter.*
 
 
 data class CharactersResponse(val characters: List<Character>) {
@@ -11,7 +10,7 @@ data class CharactersResponse(val characters: List<Character>) {
 }
 
 data class Character(
-    val characterName: PlayableCharacter,
+    val characterName: String,
     val urls: List<String>,
     val avatarUrl: String
 )

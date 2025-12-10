@@ -11,6 +11,7 @@ import com.vasurb.api.model.JoinGameResponse.JoinGameState.IN_GAME
 import com.vasurb.api.model.JoinGameResponse.JoinGameState.IN_LOBBY
 import com.vasurb.api.model.PickCharacterBody
 import com.vasurb.api.model.PickCharacterResponse
+import com.vasurb.api.model.PickRivalBody
 import com.vasurb.model.CharacterModel
 import com.vasurb.model.Color
 import com.vasurb.model.Player
@@ -28,8 +29,11 @@ import org.springframework.web.bind.annotation.RestController
 class GameController(val gameService: GameService) {
 
     @GetMapping("/create-game")
-    fun createGame(@RequestParam playerName: String): CreateGameResponse {
-        val game = gameService.createGame(playerName)
+    fun createGame(
+        @RequestParam playerName: String,
+        @RequestParam includeRivals: Boolean = false,
+    ): CreateGameResponse {
+        val game = gameService.createGame(playerName, includeRivals)
         return CreateGameResponse(game.gameId, gameService.getTurnOrder(game.gameId, playerName))
     }
 
@@ -53,26 +57,37 @@ class GameController(val gameService: GameService) {
 
     @PostMapping("/characters")
     fun characters(@RequestBody body: RequestCharactersBody): CharactersResponse {
-        val game = gameService.getGame(body.gameId)
-        val characters = game.presentedCharacters[body.playerName] ?: game.availableCharacters
-            .shuffled(Util.getDeterministicRandom(body.playerName))
-            .take(NUM_PICKABLE_CHARACTERS)
+        val characters = gameService.getPresentableCharacters(body.playerName, body.gameId)
+        return CharactersResponse(characters.map { Character(it.name, CharacterModel.get(it).urls, CharacterModel.get(it).avatarUrl) })
+    }
 
-        println("Presenting characters: $characters")
-
-        //TODO: Handle when characters is an empty list?
-        characters.forEach { game.availableCharacters.remove(it) }
-        game.presentedCharacters[body.playerName] = characters
-        return CharactersResponse(characters.map { Character(it, CharacterModel.get(it).urls, CharacterModel.get(it).avatarUrl) })
+    @PostMapping("/rivals")
+    fun rivals(): CharactersResponse {
+        val characters = gameService.getRivals()
+        return CharactersResponse(characters.map { Character(it.name, CharacterModel.get(it).urls, CharacterModel.get(it).avatarUrl) })
     }
 
     @PostMapping("/pick-character")
     fun pickCharacter(@RequestBody body: PickCharacterBody): PickCharacterResponse {
-        val game = gameService.getGame(body.gameId)
         val player = gameService.getPlayer(body.gameId, body.playerName)
         player.character = CharacterModel.get(body.characterName)
 
-        game.availableColors.remove(player.color)
+        gameService.updatePlayer(player, body.gameId)
+        return PickCharacterResponse(player.name)
+    }
+
+    @PostMapping("/pick-rival")
+    fun pickRival(@RequestBody body: PickRivalBody): PickCharacterResponse {
+        val playerName = "Rival ${body.rivalName.readableName}"
+        gameService.addPlayer(
+            playerName,
+            body.gameId,
+            isHost = false,
+            isRival = true
+        )
+
+        val player = gameService.getPlayer(body.gameId, playerName)
+        player.character = CharacterModel.get(body.rivalName)
 
         gameService.updatePlayer(player, body.gameId)
         return PickCharacterResponse(player.name)

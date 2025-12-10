@@ -1,32 +1,28 @@
 package com.vasurb.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonProperty
 
 data class Player(
     val name: String,
-    val isHost: Boolean = false
+    val isHost: Boolean = false,
+    val isRival: Boolean = false
 ) {
-    @get:JsonProperty
     var character: CharacterModel? = null
-
     var color: Color = Color.GOLD
+    var victoryPoints: Int = 0
 
-    @get:JsonProperty
     val agents = arrayListOf(
         Agent("agent-${name}#1"),
         Agent("agent-${name}#2"),
         Agent("agent-${name}#3"),
     )
 
-    @get:JsonProperty
     val spies = arrayListOf(
         Spy("spy-${name}#1"),
         Spy("spy-${name}#2"),
         Spy("spy-${name}#3"),
     )
 
-    @get:JsonProperty
     val controlFlags = arrayListOf(
         ControlFlag("control_flag-${name}#1"),
         ControlFlag("control_flag-${name}#2"),
@@ -35,10 +31,6 @@ data class Player(
 
     val contracts = arrayListOf<Contract>()
 
-    @get:JsonProperty
-    var victoryPoints: Int = 0
-
-    @get:JsonProperty
     var objectives: ArrayList<Objective> = arrayListOf()
     var resources: MutableMap<Resource, Int> = mutableMapOf(
         Resource.water to 1,
@@ -51,7 +43,7 @@ data class Player(
         Faction.SpacingGuild to 0,
         Faction.Emperor to 0,
     )
-    var factionAlliances: ArrayList<Faction> = arrayListOf<Faction>()
+    var factionAlliances: ArrayList<Faction> = arrayListOf()
 
     var swordmasterUnlocked: Boolean = false
     var makerHookUnlocked: Boolean = false

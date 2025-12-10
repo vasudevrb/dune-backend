@@ -26,6 +26,7 @@ data class Game(
     @JsonIgnore
     val contracts: Deck<ContractCard> = Deck(ContractCard.All().get())
 
+    var containsRivals = false
     var isStarted = false
     var currentPlayer: String? = null
     var firstPlayer: String? = null
