@@ -25,6 +25,7 @@ class Action(
         ADD_OR_REMOVE_VP,
         END_TURN,
         UNLOCK_SWORDMASTER,
+        GET_HIGH_COUNCIL,
         UNLOCK_MAKER_HOOK,
         GET_NEXT_CONFLICT,
         ACQUIRE_IMPERIUM_CARD,

@@ -55,6 +55,7 @@ class WSController(
             SET_FACTION_INFLUENCE -> gameService.setFactionInfluence(playerName, gameId, action)
             SET_FEYD_SIGNET_STATUS -> gameService.setFeydSignetStatus(playerName, gameId, action)
             UNLOCK_SWORDMASTER -> gameService.unlockSwordmaster(playerName, gameId)
+            GET_HIGH_COUNCIL -> gameService.getHighCouncil(playerName, gameId)
             UNLOCK_MAKER_HOOK -> gameService.unlockMakerHook(playerName, gameId)
             GET_NEXT_CONFLICT -> gameService.getNextConflict(gameId)
             SET_BONUS_SPICE -> gameService.setBonusSpice(gameId, action)

@@ -31,6 +31,8 @@ data class Game(
     var firstPlayer: String? = null
     var shieldWallBroken = false
 
+    val highCouncil = arrayListOf<String>("", "", "", "")
+
     var currentConflict: String = conflictCards.draw().url
     var nextConflictLevel: Int = conflictCards.peek()?.conflictType?.level ?: 3
 

@@ -1206,6 +1206,36 @@ class GameService {
         return WSActionResponse(messages)
     }
 
+    fun getHighCouncil(
+        playerName: String,
+        gameId: String,
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val freeSeatIndex = game.highCouncil.indexOfFirst { it.isEmpty() }
+
+        game.highCouncil[freeSeatIndex] = playerName
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName took a High Council seat"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
     fun unlockMakerHook(
         playerName: String,
         gameId: String,
