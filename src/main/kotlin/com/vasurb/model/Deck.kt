@@ -31,5 +31,11 @@ data class Deck<T: Card>(
         return (0 until num).map { draw() }.toMutableList() as ArrayList<T>
     }
 
+    fun reshuffleAll() {
+        cards.addAll(reshuffleFrom?.shuffled() ?: arrayListOf())
+        reshuffleFrom?.clear()
+        cards.shuffle()
+    }
+
     fun size(): Int = cards.size
 }

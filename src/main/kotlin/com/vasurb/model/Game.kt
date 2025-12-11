@@ -24,6 +24,11 @@ data class Game(
     val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.All().getConflicts(), shuffleAtStart = false)
 
     @JsonIgnore
+    val usedHagalCards: ArrayList<HagalCard> = arrayListOf()
+    @JsonIgnore
+    val hagalCards: Deck<HagalCard> = Deck(HagalCard.All().get(), reshuffleFrom = usedHagalCards)
+
+    @JsonIgnore
     val contracts: Deck<ContractCard> = Deck(ContractCard.All().get())
 
     var containsRivals = false
