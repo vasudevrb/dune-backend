@@ -907,7 +907,7 @@ class GameService {
 
         val contract = player.contracts.find { it.url == action.url }
         val index = player.contracts.indexOf(contract)
-        if (index != 1) {
+        if (index != -1) {
             contract?.completed = action.completed
         }
 
