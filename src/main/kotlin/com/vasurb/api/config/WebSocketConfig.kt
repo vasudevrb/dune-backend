@@ -1,6 +1,7 @@
 package com.vasurb.api.config
 
 import com.vasurb.api.auth.PlayerHandshakeInterceptor
+import com.vasurb.api.config.CorsConfig.Companion.allowedOrigins
 import org.springframework.context.annotation.Configuration
 import org.springframework.messaging.simp.config.ChannelRegistration
 import org.springframework.messaging.simp.config.MessageBrokerRegistry
@@ -20,7 +21,7 @@ class WebSocketConfig(
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry.addEndpoint("/game")
-            .setAllowedOrigins("https://dune-frontend-eff2b3.gitlab.io", "http://localhost:5173")
+            .setAllowedOrigins(*allowedOrigins)
             .withSockJS()
     }
 
