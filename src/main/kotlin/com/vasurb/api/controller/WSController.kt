@@ -14,7 +14,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.CrossOrigin
 import java.security.Principal
 
-@CrossOrigin(origins = ["https://dune-frontend-eff2b3.gitlab.io", "http://localhost:5173"])
 @Controller
 class WSController(
     val gameService: GameService,
