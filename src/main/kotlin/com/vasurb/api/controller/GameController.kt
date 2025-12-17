@@ -54,7 +54,7 @@ class GameController(val gameService: GameService) {
     fun characters(@RequestBody body: RequestCharactersBody): CharactersResponse {
         val game = gameService.getGame(body.gameId)
         val characters = game.presentedCharacters[body.playerName] ?: game.availableCharacters
-            .shuffled(Util.getDeterministicRandom(body.playerName))
+            .shuffled()
             .take(NUM_PICKABLE_CHARACTERS)
 
         println("Presenting characters: $characters")
