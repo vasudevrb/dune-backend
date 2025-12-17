@@ -1,5 +1,6 @@
 package com.vasurb.service
 
+import com.vasurb.api.model.Action
 import com.vasurb.api.model.Action.Type.*
 import com.vasurb.api.model.ws_request.*
 import com.vasurb.exception.ExpiredGameException
@@ -1070,6 +1071,21 @@ class GameService {
             it.private.inHandCards.clear()
             it.private.inHandCards.addAll(it.private.drawPile.draw(5))
         }
+
+        listOf(9, 10, 11)
+            .map { locationId -> game.locations.find { it.id == locationId }}
+            .mapNotNull { it }
+            .filter { it.agents.isEmpty() }
+            .forEach { loc ->
+                when(loc.id) {
+                    9 -> game.bonusSpice.deepDesert++
+                    10 -> game.bonusSpice.haggaBasin++
+                    11 -> game.bonusSpice.imperialBasin++
+                }
+            }
+
+        game.currentConflict = game.conflictCards.draw().url
+        game.nextConflictLevel = game.conflictCards.peek()?.conflictType?.level ?: 0
 
         game.locations.forEach { location ->
             val agentIterator = location.agents.iterator()
