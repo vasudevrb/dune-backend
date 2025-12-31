@@ -1363,10 +1363,10 @@ class GameService {
         if (game.players.size <= 2) {
             return game.availableObjectives.getRandomAndRemove()
         } else {
-            val FourPObjectives = arrayListOf(DesertMouse, Ornithopter)
+            val FourPObjectives = arrayListOf(DesertMouse, Crysknife)
 
-            val crysknifePlayer = game.players.find { it.objectives.contains(Crysknife) }
-            crysknifePlayer?.objectives = arrayListOf(FourPObjectives.getRandomAndRemove())
+            val ornithopterPlayer = game.players.find { it.objectives.contains(Ornithopter) }
+            ornithopterPlayer?.objectives = arrayListOf(FourPObjectives.getRandomAndRemove())
 
             return FourPObjectives[0]
         }
