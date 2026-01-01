@@ -648,18 +648,34 @@ class GameService {
         val player = getPlayer(gameId, playerName)
         val action = mapper.getAs<AddOrRemoveCombatUnit>(action.body)
 
-        when (action.unitType) {
-            "Sandworm" -> {
-                if (action.add){
-                    player.combat.wormsInCombat++
-                    player.combat.strength += 3
-                } else {
-                    player.combat.wormsInCombat--
-                    player.combat.strength -= 3
+        when (action.add) {
+            true -> {
+                when (action.unitType) {
+                    "Sandworm" -> {
+                        player.combat.wormsInCombat+= action.quantity
+                        player.combat.strength += (3 * action.quantity)
+                    }
+                    "Troop" -> player.combat.troopsInGarrison+=action.quantity
+                    "Strength" -> player.combat.strength += action.quantity
                 }
             }
-            "Troop" -> if (action.add) player.combat.troopsInGarrison++ else player.combat.troopsInGarrison--
-            "Strength" -> if (action.add) player.combat.strength++ else player.combat.strength--
+            false -> {
+                when (action.unitType) {
+                    "Sandworm" -> {
+                        val quantity = min(player.combat.wormsInCombat, action.quantity)
+                        player.combat.wormsInCombat-= quantity
+                        player.combat.strength -= (3 * quantity)
+                    }
+                    "Troop" -> {
+                        val quantity = min(player.combat.troopsInGarrison, action.quantity)
+                        player.combat.troopsInGarrison-=quantity
+                    }
+                    "Strength" -> {
+                        val quantity = min(player.combat.strength, action.quantity)
+                        player.combat.strength -= quantity
+                    }
+                }
+            }
         }
 
         val responseBody = mapper.createObjectNode().apply {

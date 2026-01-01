@@ -43,7 +43,8 @@ data class MoveCombatUnit(
 
 data class AddOrRemoveCombatUnit(
     val unitType: String,
-    val add: Boolean
+    val add: Boolean,
+    val quantity: Int
 )
 
 data class AddOrRemoveResource(
