@@ -48,7 +48,8 @@ data class AddOrRemoveCombatUnit(
 
 data class AddOrRemoveResource(
     val resourceType: Resource,
-    val add: Boolean
+    val add: Boolean,
+    val quantity: Int
 )
 
 data class AddOrRemoveVP(

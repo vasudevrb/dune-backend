@@ -1,6 +1,5 @@
 package com.vasurb.service
 
-import com.vasurb.api.model.Action
 import com.vasurb.api.model.Action.Type.*
 import com.vasurb.api.model.ws_request.*
 import com.vasurb.exception.ExpiredGameException
@@ -14,6 +13,7 @@ import com.vasurb.util.Util.mapper
 import com.vasurb.util.Util.toTree
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.min
 
 @Component
 class GameService {
@@ -692,10 +692,12 @@ class GameService {
         val player = getPlayer(gameId, playerName)
         val action = mapper.getAs<AddOrRemoveResource>(action.body)
 
-        when (action.resourceType) {
-            Resource.water -> if(action.add) player.resources.inc(Resource.water) else player.resources.dec(Resource.water)
-            Resource.spice -> if(action.add) player.resources.inc(Resource.spice) else player.resources.dec(Resource.spice)
-            Resource.solari -> if(action.add) player.resources.inc(Resource.solari) else player.resources.dec(Resource.solari)
+        var quantity = action.quantity
+        if (action.add) {
+            player.resources.inc(action.resourceType, quantity)
+        } else {
+            quantity = min(player.resources.getValue(action.resourceType), action.quantity)
+            player.resources.dec(action.resourceType, quantity)
         }
 
         val responseBody = mapper.createObjectNode().apply {
@@ -703,21 +705,25 @@ class GameService {
             putPOJO("resources", player.resources)
         }
 
-        val message = WSActionResponse.Message(
-            WSActionResponse.AllPlayersExcept(playerName),
-            WSActionResponse.Content(WSActionResponse.Type.UPDATE_RESOURCES, responseBody)
+        val messages = mutableListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName), WSActionResponse.Content(WSActionResponse.Type.UPDATE_RESOURCES, responseBody)
+            )
         )
 
-        return WSActionResponse(listOf(
-            message,
-            WSActionResponse.Message(
-                WSActionResponse.AllPlayersExcept(playerName),
-                WSActionResponse.Content(
-                    WSActionResponse.Type.SHOW_NOTIFICATION,
-                    mapper.toTree(Notification("$playerName ${if (action.add) "gained" else "spent"} 1 ${action.resourceType}"))
+        if (quantity > 0) {
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayersExcept(playerName), WSActionResponse.Content(
+                        WSActionResponse.Type.SHOW_NOTIFICATION,
+                        mapper.toTree(Notification("$playerName ${if (action.add) "gained" else "spent"} $quantity ${action.resourceType}"))
+                    )
                 )
             )
-        ))
+        }
+
+        return WSActionResponse(messages)
     }
 
     fun addOrRemoveVP(
