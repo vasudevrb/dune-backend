@@ -50,7 +50,9 @@ data class Game(
     @JsonIgnore
     val availableObjectives = arrayListOf(DesertMouse, Ornithopter, Crysknife)
     @JsonIgnore
-    val availableCharacters = PlayableCharacter.entries.toMutableList()
+    val availableCharacters = PlayableCharacter
+        .entries
+        .toMutableList()
     @JsonIgnore
     val presentedCharacters = mutableMapOf<String, List<PlayableCharacter>>()
     @JsonIgnore

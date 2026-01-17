@@ -15,6 +15,7 @@ import com.vasurb.util.Util.mapper
 import com.vasurb.util.Util.toTree
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.min
 
 @Component
 class GameService {
@@ -680,18 +681,34 @@ class GameService {
         val player = getPlayer(gameId, playerName)
         val action = mapper.getAs<AddOrRemoveCombatUnit>(action.body)
 
-        when (action.unitType) {
-            "Sandworm" -> {
-                if (action.add){
-                    player.combat.wormsInCombat++
-                    player.combat.strength += 3
-                } else {
-                    player.combat.wormsInCombat--
-                    player.combat.strength -= 3
+        when (action.add) {
+            true -> {
+                when (action.unitType) {
+                    "Sandworm" -> {
+                        player.combat.wormsInCombat+= action.quantity
+                        player.combat.strength += (3 * action.quantity)
+                    }
+                    "Troop" -> player.combat.troopsInGarrison+=action.quantity
+                    "Strength" -> player.combat.strength += action.quantity
                 }
             }
-            "Troop" -> if (action.add) player.combat.troopsInGarrison++ else player.combat.troopsInGarrison--
-            "Strength" -> if (action.add) player.combat.strength++ else player.combat.strength--
+            false -> {
+                when (action.unitType) {
+                    "Sandworm" -> {
+                        val quantity = min(player.combat.wormsInCombat, action.quantity)
+                        player.combat.wormsInCombat-= quantity
+                        player.combat.strength -= (3 * quantity)
+                    }
+                    "Troop" -> {
+                        val quantity = min(player.combat.troopsInGarrison, action.quantity)
+                        player.combat.troopsInGarrison-=quantity
+                    }
+                    "Strength" -> {
+                        val quantity = min(player.combat.strength, action.quantity)
+                        player.combat.strength -= quantity
+                    }
+                }
+            }
         }
 
         val responseBody = mapper.createObjectNode().apply {
@@ -724,10 +741,12 @@ class GameService {
         val player = getPlayer(gameId, playerName)
         val action = mapper.getAs<AddOrRemoveResource>(action.body)
 
-        when (action.resourceType) {
-            Resource.water -> if(action.add) player.resources.inc(Resource.water) else player.resources.dec(Resource.water)
-            Resource.spice -> if(action.add) player.resources.inc(Resource.spice) else player.resources.dec(Resource.spice)
-            Resource.solari -> if(action.add) player.resources.inc(Resource.solari) else player.resources.dec(Resource.solari)
+        var quantity = action.quantity
+        if (action.add) {
+            player.resources.inc(action.resourceType, quantity)
+        } else {
+            quantity = min(player.resources.getValue(action.resourceType), action.quantity)
+            player.resources.dec(action.resourceType, quantity)
         }
 
         val responseBody = mapper.createObjectNode().apply {
@@ -735,21 +754,25 @@ class GameService {
             putPOJO("resources", player.resources)
         }
 
-        val message = WSActionResponse.Message(
-            WSActionResponse.AllPlayersExcept(playerName),
-            WSActionResponse.Content(WSActionResponse.Type.UPDATE_RESOURCES, responseBody)
+        val messages = mutableListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName), WSActionResponse.Content(WSActionResponse.Type.UPDATE_RESOURCES, responseBody)
+            )
         )
 
-        return WSActionResponse(listOf(
-            message,
-            WSActionResponse.Message(
-                WSActionResponse.AllPlayersExcept(playerName),
-                WSActionResponse.Content(
-                    WSActionResponse.Type.SHOW_NOTIFICATION,
-                    mapper.toTree(Notification("$playerName ${if (action.add) "gained" else "spent"} 1 ${action.resourceType}"))
+        if (quantity > 0) {
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayersExcept(playerName), WSActionResponse.Content(
+                        WSActionResponse.Type.SHOW_NOTIFICATION,
+                        mapper.toTree(Notification("$playerName ${if (action.add) "gained" else "spent"} $quantity ${action.resourceType}"))
+                    )
                 )
             )
-        ))
+        }
+
+        return WSActionResponse(messages)
     }
 
     fun addOrRemoveVP(
@@ -1431,10 +1454,10 @@ class GameService {
         if (game.players.size <= 2) {
             return game.availableObjectives.getRandomAndRemove()
         } else {
-            val FourPObjectives = arrayListOf(DesertMouse, Ornithopter)
+            val FourPObjectives = arrayListOf(DesertMouse, Crysknife)
 
-            val crysknifePlayer = game.players.find { it.objectives.contains(Crysknife) }
-            crysknifePlayer?.objectives = arrayListOf(FourPObjectives.getRandomAndRemove())
+            val ornithopterPlayer = game.players.find { it.objectives.contains(Ornithopter) }
+            ornithopterPlayer?.objectives = arrayListOf(FourPObjectives.getRandomAndRemove())
 
             return FourPObjectives[0]
         }

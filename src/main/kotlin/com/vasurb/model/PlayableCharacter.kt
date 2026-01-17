@@ -1,6 +1,12 @@
 package com.vasurb.model
 
-enum class PlayableCharacter(val readableName: String) {
+import com.vasurb.model.CharacterSource.IMPERIUM
+import com.vasurb.model.CharacterSource.UPRISING
+
+enum class PlayableCharacter(
+    val readableName: String,
+    val characterSource: CharacterSource = UPRISING
+) {
     MARGOT_FENRING("Margot Fenring"),
     FEYD_RAUTHA("Feyd Rautha"),
     AMBER_METULLI("Amber Metulli"),
@@ -10,17 +16,21 @@ enum class PlayableCharacter(val readableName: String) {
     EMPEROR_SHADDAM("Shaddam Corrino"),
     PRINCESS_IRULAN("Princess Irulan"),
     STABAN_TUEK("Staban Tuek"),
-    ARIANA_THORVALD("Ariana Thorvald"),
-    ARMAND_ECAZ("Armend Ecaz"),
-    GLOSSU_RABBAN("Glossu Rabban"),
-    HASIMIR_FENRING("Hasimir Fenring"),
-    HELEN_MOHAIM("Helen Mohaim"),
-    HELENA_RICHESE("Helena Richese"),
-    ILBAN_RICHESE("Ilban Richese"),
-    LETO_ATREIDES("Leto Atreides"),
-    LIET_KYNES("Liet Kynes"),
-    MEMNON_THORVALD("Memnon Thorvald"),
-    PAUL_ATREIDES("Paul Atreides"),
-    VLADIMIR_HARKONNEN("Vladimir Harkonnen"),
-    YUNA_MORITANI("Yuna Moritani")
+    ARIANA_THORVALD("Ariana Thorvald", IMPERIUM),
+    ARMAND_ECAZ("Armend Ecaz", IMPERIUM),
+    GLOSSU_RABBAN("Glossu Rabban", IMPERIUM),
+    HASIMIR_FENRING("Hasimir Fenring", IMPERIUM),
+    HELEN_MOHAIM("Helen Mohaim", IMPERIUM),
+    HELENA_RICHESE("Helena Richese", IMPERIUM),
+    ILBAN_RICHESE("Ilban Richese", IMPERIUM),
+    LETO_ATREIDES("Leto Atreides", IMPERIUM),
+    LIET_KYNES("Liet Kynes", IMPERIUM),
+    MEMNON_THORVALD("Memnon Thorvald", IMPERIUM),
+    PAUL_ATREIDES("Paul Atreides", IMPERIUM),
+    VLADIMIR_HARKONNEN("Vladimir Harkonnen", IMPERIUM),
+    YUNA_MORITANI("Yuna Moritani", IMPERIUM)
+}
+
+enum class CharacterSource{
+    UPRISING, IMPERIUM
 }
