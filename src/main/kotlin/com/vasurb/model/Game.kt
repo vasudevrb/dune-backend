@@ -31,7 +31,14 @@ data class Game(
     @JsonIgnore
     val contracts: Deck<ContractCard> = Deck(ContractCard.All().get())
 
+    @JsonIgnore
+    val techs: Deck<TechTile> = Deck(TechTile.All().get())
+
+    @JsonIgnore
+    val skills: Deck<SardaukarSkill> = Deck(SardaukarSkill.All().get())
+
     var containsRivals = false
+    var containsBloodlines = false
     var isStarted = false
     var currentPlayer: String? = null
     var firstPlayer: String? = null
@@ -46,6 +53,12 @@ data class Game(
 
     val imperiumRow: ArrayList<ImperiumCard> = imperiumCards.draw(5)
     var reserveRow: ArrayList<ReserveCard> = refreshReserveRow()
+
+    // BLOODLINES
+
+    val currentTechs = techs.draw(3).map { it.url }.toMutableList() as ArrayList<String>
+    val currentSkills = skills.draw(4).map { it.url }.toMutableList() as ArrayList<String>
+    val sardaukarCommanders = SardaukarCommander.All().get()
 
     @JsonIgnore
     val availableObjectives = arrayListOf(DesertMouse, Ornithopter, Crysknife)

@@ -54,6 +54,8 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
             Card.Type.STARTER -> "imperium_cards_starter"
             Card.Type.CONTRACT -> "contracts"
             Card.Type.HAGAL -> "hagal_cards"
+            Card.Type.TECH -> "tech_tiles"
+            Card.Type.SARDAUKAR_SKILL -> "commander_skills"
             else -> "no_op"
         }
     }

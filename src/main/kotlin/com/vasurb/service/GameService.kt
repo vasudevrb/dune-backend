@@ -1421,10 +1421,11 @@ class GameService {
         return WSActionResponse(messages)
     }
 
-    fun createGame(playerName: String, includeRivals: Boolean): Game {
+    fun createGame(playerName: String, includeRivals: Boolean, includeBloodlines: Boolean): Game {
         val gameId = "dune${games.size + 1}"
         val game = Game(gameId)
         game.containsRivals = includeRivals
+        game.containsBloodlines = includeBloodlines
         games[gameId] = game
 
         addPlayer(playerName, gameId, isHost = true)

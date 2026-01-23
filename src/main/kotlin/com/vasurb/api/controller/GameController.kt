@@ -31,6 +31,7 @@ class GameController(val gameService: GameService) {
     fun createGame(
         @RequestParam playerName: String,
         @RequestParam includeRivals: Boolean = false,
+        @RequestParam includeBloodlines: Boolean = false
     ): CreateGameResponse {
         val game = gameService.createGame(playerName, includeRivals)
         return CreateGameResponse(game.gameId, gameService.getTurnOrder(game.gameId, playerName))
