@@ -1,11 +1,12 @@
 package com.vasurb.service
 
 import com.vasurb.api.controller.GameController.Companion.NUM_PICKABLE_CHARACTERS
-import com.vasurb.api.model.Action
 import com.vasurb.api.model.Action.Type.*
 import com.vasurb.api.model.ws_request.*
 import com.vasurb.exception.ExpiredGameException
 import com.vasurb.model.*
+import com.vasurb.model.Card.Source.BLOODLINES
+import com.vasurb.model.Card.Source.UPRISING
 import com.vasurb.model.Objective.*
 import com.vasurb.util.Util.dec
 import com.vasurb.util.Util.getAs
@@ -278,18 +279,18 @@ class GameService {
         val game = getGame(gameId)
         val player = game.players.find { it.name == playerName }
             ?: return WSActionResponse(listOf())
-        val sourceList = when (body.source) {
-            Card.Source.HAND -> player.private.inHandCards
-            Card.Source.PLAY -> player.private.inPlayCards
-            Card.Source.DISCARD -> player.private.discardedCards
-            Card.Source.INTRIGUE -> player.private.intrigueCards
+        val sourceDeckList = when (body.sourceDeck) {
+            Card.SourceDeck.HAND -> player.private.inHandCards
+            Card.SourceDeck.PLAY -> player.private.inPlayCards
+            Card.SourceDeck.DISCARD -> player.private.discardedCards
+            Card.SourceDeck.INTRIGUE -> player.private.intrigueCards
         }
 
-        val removable = sourceList.find { it.url == body.url }
+        val removable = sourceDeckList.find { it.url == body.url }
         val messages = arrayListOf<WSActionResponse.Message>()
 
         removable?.let {
-            sourceList.remove(it)
+            sourceDeckList.remove(it)
             when (action.type) {
                 USE_CARD -> useCard(it, body, player)
                 DISCARD_CARD -> discardCard(it as AgentCard, body, player)
@@ -324,23 +325,23 @@ class GameService {
 
     private fun useCard(card: Card, body: CardAction, player: Player) {
         if (card is AgentCard) {
-            when (body.source) {
-                Card.Source.HAND -> player.private.inPlayCards.add(card)
-                Card.Source.PLAY -> player.private.inHandCards.add(card)
-                Card.Source.DISCARD -> player.private.inHandCards.add(card)
+            when (body.sourceDeck) {
+                Card.SourceDeck.HAND -> player.private.inPlayCards.add(card)
+                Card.SourceDeck.PLAY -> player.private.inHandCards.add(card)
+                Card.SourceDeck.DISCARD -> player.private.inHandCards.add(card)
                 else -> {}
             }
         } else if (card is IntrigueCard) {
-            when (body.source) {
-                Card.Source.INTRIGUE -> player.private.usedIntrigues.add(card)
+            when (body.sourceDeck) {
+                Card.SourceDeck.INTRIGUE -> player.private.usedIntrigues.add(card)
                 else -> {}
             }
         }
     }
 
     private fun discardCard(card: AgentCard, body: CardAction, player: Player) {
-        when (body.source) {
-            Card.Source.HAND -> player.private.discardedCards.add(card)
+        when (body.sourceDeck) {
+            Card.SourceDeck.HAND -> player.private.discardedCards.add(card)
             else -> {}
         }
     }
@@ -1183,7 +1184,7 @@ class GameService {
 
         while (iterator.hasNext()) {
             val card = iterator.next()
-            useCard(card, CardAction(card.url, Card.Source.HAND), player)
+            useCard(card, CardAction(card.url, Card.SourceDeck.HAND), player)
             iterator.remove()
         }
 
@@ -1423,9 +1424,12 @@ class GameService {
 
     fun createGame(playerName: String, includeRivals: Boolean, includeBloodlines: Boolean): Game {
         val gameId = "dune${games.size + 1}"
-        val game = Game(gameId)
+
+        val sources = arrayListOf(UPRISING)
+        if (includeBloodlines) sources.add(BLOODLINES)
+
+        val game = Game(gameId, sources)
         game.containsRivals = includeRivals
-        game.containsBloodlines = includeBloodlines
         games[gameId] = game
 
         addPlayer(playerName, gameId, isHost = true)

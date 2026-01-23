@@ -1,17 +1,20 @@
 package com.vasurb.model
 
+import com.vasurb.model.Card.Source.BLOODLINES
+import com.vasurb.model.Card.Type.TECH
 import com.vasurb.util.CardsUrlRetriever
 
 data class TechTile(
-    override val url: String
+    override val url: String,
+    override val source: Card.Source = BLOODLINES
 ): Card {
-    override val type: Card.Type = Card.Type.TECH
+    override val type: Card.Type = TECH
 
     class All {
         fun get(): ArrayList<TechTile> {
-            val tiles = CardsUrlRetriever.cardImageUrls[CardsUrlRetriever.Key(Card.Type.TECH)]
-                ?.map { url -> TechTile(url) }
-                ?.toMutableList() as ArrayList<TechTile>
+            val tiles = CardsUrlRetriever.getImageUrls(TECH, BLOODLINES)
+                .map { url -> TechTile(url) }
+                .toMutableList() as ArrayList<TechTile>
 
             return ArrayList(tiles)
         }

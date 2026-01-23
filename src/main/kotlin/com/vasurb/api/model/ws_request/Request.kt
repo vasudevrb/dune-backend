@@ -100,5 +100,5 @@ data class BonusSpiceAction(
 
 data class CardAction(
     val url: String,
-    val source: Card.Source
+    val sourceDeck: Card.SourceDeck
 )

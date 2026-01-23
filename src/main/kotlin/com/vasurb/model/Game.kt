@@ -7,6 +7,7 @@ import kotlin.collections.mapNotNull
 
 data class Game(
     val gameId: String,
+    val allowedSources: List<Card.Source>,
     val locations: List<Location> = Location.All().get(),
     val spyLocations: List<SpyLocation> = SpyLocation.All().get(),
     val players: ArrayList<Player> = arrayListOf()
@@ -14,14 +15,14 @@ data class Game(
 
     val bonusSpice: BonusSpice = BonusSpice()
     @JsonIgnore
-    val imperiumCards: Deck<ImperiumCard> = Deck(ImperiumCard.All().get())
+    val imperiumCards: Deck<ImperiumCard> = Deck(ImperiumCard.All().get(allowedSources))
     @JsonIgnore
     val reserveCards: Map<ReserveType, ArrayList<ReserveCard>> = ReserveCard.All().get()
 
     @JsonIgnore
-    val intrigueCards: Deck<IntrigueCard> = Deck(IntrigueCard.All().get())
+    val intrigueCards: Deck<IntrigueCard> = Deck(IntrigueCard.All().get(allowedSources))
     @JsonIgnore
-    val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.All().getConflicts(), shuffleAtStart = false)
+    val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.All().getConflicts(allowedSources), shuffleAtStart = false)
 
     @JsonIgnore
     val usedHagalCards: ArrayList<HagalCard> = arrayListOf()
@@ -29,7 +30,7 @@ data class Game(
     val hagalCards: Deck<HagalCard> = Deck(HagalCard.All().get(), reshuffleFrom = usedHagalCards)
 
     @JsonIgnore
-    val contracts: Deck<ContractCard> = Deck(ContractCard.All().get())
+    val contracts: Deck<ContractCard> = Deck(ContractCard.All().get(allowedSources))
 
     @JsonIgnore
     val techs: Deck<TechTile> = Deck(TechTile.All().get())
@@ -38,7 +39,6 @@ data class Game(
     val skills: Deck<SardaukarSkill> = Deck(SardaukarSkill.All().get())
 
     var containsRivals = false
-    var containsBloodlines = false
     var isStarted = false
     var currentPlayer: String? = null
     var firstPlayer: String? = null
