@@ -689,7 +689,14 @@ class GameService {
                         player.combat.wormsInCombat+= action.quantity
                         player.combat.strength += (3 * action.quantity)
                     }
-                    "Troop" -> player.combat.troopsInGarrison+=action.quantity
+                    "Troop" -> {
+                        player.combat.troopsInGarrison += action.quantity
+                        player.combat.troopsInSupply -= action.quantity
+                    }
+                    "Commander" -> {
+                        player.combat.commandersInGarrison += action.quantity
+                        player.combat.commandersInSupply -= action.quantity
+                    }
                     "Strength" -> player.combat.strength += action.quantity
                 }
             }
@@ -702,7 +709,13 @@ class GameService {
                     }
                     "Troop" -> {
                         val quantity = min(player.combat.troopsInGarrison, action.quantity)
-                        player.combat.troopsInGarrison-=quantity
+                        player.combat.troopsInGarrison -= quantity
+                        player.combat.troopsInSupply += quantity
+                    }
+                    "Commander" -> {
+                        val quantity = min(player.combat.commandersInGarrison, action.quantity)
+                        player.combat.commandersInGarrison -= quantity
+                        player.combat.commandersInSupply += quantity
                     }
                     "Strength" -> {
                         val quantity = min(player.combat.strength, action.quantity)
