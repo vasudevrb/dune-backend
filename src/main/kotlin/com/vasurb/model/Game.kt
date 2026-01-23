@@ -56,8 +56,8 @@ data class Game(
 
     // BLOODLINES
 
-    val currentTechs = techs.draw(3).map { it.url }.toMutableList() as ArrayList<String>
-    val currentSkills = skills.draw(4).map { it.url }.toMutableList() as ArrayList<String>
+    val currentTechs = techs.draw(3).toMutableList() as ArrayList<TechTile>
+    val currentSkills = skills.draw(4).toMutableList() as ArrayList<SardaukarSkill>
     val sardaukarCommanders = SardaukarCommander.All().get()
 
     @JsonIgnore

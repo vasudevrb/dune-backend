@@ -33,7 +33,7 @@ class GameController(val gameService: GameService) {
         @RequestParam includeRivals: Boolean = false,
         @RequestParam includeBloodlines: Boolean = false
     ): CreateGameResponse {
-        val game = gameService.createGame(playerName, includeRivals)
+        val game = gameService.createGame(playerName, includeRivals, includeBloodlines)
         return CreateGameResponse(game.gameId, gameService.getTurnOrder(game.gameId, playerName))
     }
 
