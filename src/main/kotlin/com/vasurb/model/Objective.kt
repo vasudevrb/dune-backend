@@ -1,5 +1,5 @@
 package com.vasurb.model
 
 enum class Objective {
-    DesertMouse, Crysknife, Ornithopter
+    DesertMouse, Crysknife, Ornithopter, Any
 }

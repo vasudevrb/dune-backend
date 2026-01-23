@@ -26,8 +26,11 @@ class WSController(
         message: String,
         principal: Principal
     ) {
-        val playerName = principal.name ?: throw RuntimeException("Missing Player name")
         val action: WSActionRequest = mapper.readValue(message)
+        val playerName = getNameFromMessage(action)
+            ?: principal.name
+            ?: throw RuntimeException("Missing Player name")
+
         println("Received request: $action")
 
         val response: WSActionResponse? = when (action.type) {
@@ -38,6 +41,7 @@ class WSController(
             USE_CARD, DISCARD_CARD, TRASH_CARD -> gameService.handleCardAction(gameId, playerName, action)
             DRAW_CARD -> gameService.drawCard(gameId, playerName)
             GAIN_INTRIGUE_CARD -> gameService.drawIntrigueCard(gameId, playerName)
+            TRASH_INTRIGUE_CARD -> gameService.trashIntrigueCard(gameId, playerName)
             STEAL_INTRIGUE_CARD -> gameService.stealIntrigueCards(gameId, playerName)
             PLACE_AGENT -> gameService.handlePlaceAgent(playerName, gameId, action)
             RECALL_AGENT -> gameService.handleRecallAgent(playerName, gameId, action)
@@ -65,6 +69,8 @@ class WSController(
             ACQUIRE_CONTRACT -> gameService.acquireContract(playerName, gameId, action)
             COMPLETE_CONTRACT -> gameService.completeContract(playerName, gameId, action)
             BREAK_SHIELD_WALL -> gameService.breakShieldWall(playerName, gameId)
+            GET_HAGAL_CARD -> gameService.getHagalCard(playerName, gameId)
+            RESHUFFLE_HAGAL_CARDS -> gameService.reshuffleHagalCards(gameId)
             CLEAR_ROUND -> gameService.clearRound(gameId)
         }
 
@@ -80,6 +86,10 @@ class WSController(
                         .forEach { sendMessageToUser(gameId, it, message.content) }
             }
         }
+    }
+
+    private fun getNameFromMessage(message: WSActionRequest): String? {
+        return message.body?.get("playerName")?.asText()
     }
 
     private fun sendMessageToUser(gameId: String, userId: String, content: WSActionResponse.Content) {

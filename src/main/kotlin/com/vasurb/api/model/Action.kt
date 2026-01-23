@@ -36,6 +36,7 @@ class Action(
         RECALL_CONTROL_FLAG,
         REVEAL,
         GAIN_INTRIGUE_CARD,
+        TRASH_INTRIGUE_CARD,
         STEAL_INTRIGUE_CARD,
         DRAW_CARD,
         DISCARD_CARD,
@@ -44,6 +45,8 @@ class Action(
         GAIN_OR_LOSE_ALLIANCE,
         GAIN_OR_LOSE_OBJECTIVE,
         BREAK_SHIELD_WALL,
+        GET_HAGAL_CARD,
+        RESHUFFLE_HAGAL_CARDS,
         ACQUIRE_CONTRACT,
         COMPLETE_CONTRACT,
         CLEAR_ROUND

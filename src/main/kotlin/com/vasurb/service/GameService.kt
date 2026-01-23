@@ -1,5 +1,7 @@
 package com.vasurb.service
 
+import com.vasurb.api.controller.GameController.Companion.NUM_PICKABLE_CHARACTERS
+import com.vasurb.api.model.Action
 import com.vasurb.api.model.Action.Type.*
 import com.vasurb.api.model.ws_request.*
 import com.vasurb.exception.ExpiredGameException
@@ -150,6 +152,37 @@ class GameService {
 
         player.private.intrigueCards.add(game.intrigueCards.draw())
         val message = "$playerName drew an intrigue card"
+
+        return WSActionResponse(
+            listOf(
+                WSActionResponse.Message(
+                    WSActionResponse.SinglePlayer(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+                ),
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayersExcept(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+                ),
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayersExcept(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION, mapper.toTree(Notification(message)))
+                )
+            )
+        )
+    }
+
+    // Used for rivals
+    fun trashIntrigueCard(
+        gameId: String,
+        playerName: String,
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+
+        if (player.private.intrigueCards.isEmpty()){
+            return WSActionResponse(listOf())
+        }
+        player.private.intrigueCards.removeAt(0)
+        val message = "$playerName trashed an intrigue card"
 
         return WSActionResponse(
             listOf(
@@ -1352,19 +1385,55 @@ class GameService {
         return WSActionResponse(messages)
     }
 
-    fun createGame(playerName: String): Game {
+    fun getHagalCard(
+        rivalPlayerName: String,
+        gameId: String,
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val card = game.hagalCards.draw()
+        game.usedHagalCards.add(card)
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(card.url, rivalPlayerName, DRAW_CARD)))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun reshuffleHagalCards(
+        gameId: String
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        game.hagalCards.reshuffleAll()
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION, mapper.toTree(Notification("Hagal deck was reshuffled")))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun createGame(playerName: String, includeRivals: Boolean): Game {
         val gameId = "dune${games.size + 1}"
         val game = Game(gameId)
+        game.containsRivals = includeRivals
         games[gameId] = game
 
         addPlayer(playerName, gameId, isHost = true)
         return game
     }
 
-    fun addPlayer(playerName: String, gameId: String, isHost: Boolean = false): Game {
+    fun addPlayer(playerName: String, gameId: String, isHost: Boolean = false, isRival: Boolean = false): Game {
         val game = getGame(gameId)
-
-        val newPlayer = Player(playerName, isHost = isHost)
+        val newPlayer = Player(playerName, isHost = isHost, isRival = isRival)
 
         newPlayer.color = game.availableColors.removeAt(0)
         val objective = getObjective(game)
@@ -1404,6 +1473,23 @@ class GameService {
         return getGame(gameId).initialTurnOrder.entries
             .find { it.value == playerName }
             ?.key ?: 0
+    }
+
+    fun getPresentableCharacters(playerName: String, gameId: String): List<PlayableCharacter> {
+        val game = getGame(gameId)
+        println("Current characters: ${game.availableCharacters.size}: ${game.availableCharacters}")
+        val characters = game.presentedCharacters[playerName] ?: game.availableCharacters
+            .shuffled()
+            .take(if(game.containsRivals) game.availableCharacters.size else NUM_PICKABLE_CHARACTERS)
+
+        characters.forEach { game.availableCharacters.remove(it) }
+        println("For player ${playerName} returning: ${characters}. New size ${game.availableCharacters.size} : ${game.availableCharacters}")
+        if (!game.containsRivals) { game.presentedCharacters[playerName] = characters }
+        return characters
+    }
+
+    fun getRivals(): List<RivalCharacter> {
+        return RivalCharacter.entries.toMutableList()
     }
 
     fun getPlayer(gameId: String, playerName: String): Player {

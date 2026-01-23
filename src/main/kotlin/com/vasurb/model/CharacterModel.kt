@@ -1,6 +1,7 @@
 package com.vasurb.model
 
 import com.vasurb.util.CharacterUrlRetriever
+import com.vasurb.util.RivalUrlRetriever
 
 data class CharacterModel(
     val name: String,
@@ -21,6 +22,15 @@ data class CharacterModel(
                 c.readableName,
                 CharacterUrlRetriever.characterImageUrls.getValue(c),
                 CharacterUrlRetriever.avatarImageUrl.getValue(c),
+                CharacterAdditionalInfo()
+            )
+        }
+
+        fun get(c: RivalCharacter): CharacterModel {
+            return CharacterModel(
+                c.readableName,
+                RivalUrlRetriever.rivalImageUrls.getValue(c),
+                RivalUrlRetriever.avatarImageUrl.getValue(c),
                 CharacterAdditionalInfo()
             )
         }
