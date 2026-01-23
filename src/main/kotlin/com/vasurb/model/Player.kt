@@ -49,6 +49,9 @@ data class Player(
     var makerHookUnlocked: Boolean = false
     var combat: CombatModel = CombatModel()
 
+    val skills = arrayListOf<SardaukarSkill>()
+    val techs = arrayListOf<TechTile>()
+
     val private: Private = Private()
 
     @JsonIgnore

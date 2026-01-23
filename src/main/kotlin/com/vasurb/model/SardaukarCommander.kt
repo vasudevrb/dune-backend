@@ -7,7 +7,7 @@ data class SardaukarCommander(
 
     class All {
         fun get(): ArrayList<SardaukarCommander>  = arrayListOf(
-            SardaukarCommander(-1),
+            SardaukarCommander(1000),
             SardaukarCommander(1),
             SardaukarCommander(2),
             SardaukarCommander(4),

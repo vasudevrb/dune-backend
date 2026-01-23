@@ -71,6 +71,9 @@ class WSController(
             BREAK_SHIELD_WALL -> gameService.breakShieldWall(playerName, gameId)
             GET_HAGAL_CARD -> gameService.getHagalCard(playerName, gameId)
             RESHUFFLE_HAGAL_CARDS -> gameService.reshuffleHagalCards(gameId)
+            ACQUIRE_SARDAUKAR_COMMANDER -> gameService.acquireSardaukarCommander(playerName, gameId, action)
+            ACQUIRE_COMMANDER_SKILL -> gameService.acquireCommanderSkill(playerName, gameId, action)
+            TRASH_COMMANDER_SKILL -> gameService.trashCommanderSkill(playerName, gameId, action)
             CLEAR_ROUND -> gameService.clearRound(gameId)
         }
 

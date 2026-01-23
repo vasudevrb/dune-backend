@@ -279,7 +279,7 @@ class GameService {
         val game = getGame(gameId)
         val player = game.players.find { it.name == playerName }
             ?: return WSActionResponse(listOf())
-        val sourceDeckList = when (body.sourceDeck) {
+        val sourceDeckList = when (body.source) {
             Card.SourceDeck.HAND -> player.private.inHandCards
             Card.SourceDeck.PLAY -> player.private.inPlayCards
             Card.SourceDeck.DISCARD -> player.private.discardedCards
@@ -325,14 +325,14 @@ class GameService {
 
     private fun useCard(card: Card, body: CardAction, player: Player) {
         if (card is AgentCard) {
-            when (body.sourceDeck) {
+            when (body.source) {
                 Card.SourceDeck.HAND -> player.private.inPlayCards.add(card)
                 Card.SourceDeck.PLAY -> player.private.inHandCards.add(card)
                 Card.SourceDeck.DISCARD -> player.private.inHandCards.add(card)
                 else -> {}
             }
         } else if (card is IntrigueCard) {
-            when (body.sourceDeck) {
+            when (body.source) {
                 Card.SourceDeck.INTRIGUE -> player.private.usedIntrigues.add(card)
                 else -> {}
             }
@@ -340,7 +340,7 @@ class GameService {
     }
 
     private fun discardCard(card: AgentCard, body: CardAction, player: Player) {
-        when (body.sourceDeck) {
+        when (body.source) {
             Card.SourceDeck.HAND -> player.private.discardedCards.add(card)
             else -> {}
         }
@@ -1429,6 +1429,155 @@ class GameService {
             WSActionResponse.Message(
                 WSActionResponse.AllPlayers,
                 WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION, mapper.toTree(Notification("Hagal deck was reshuffled")))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun acquireSardaukarCommander(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<AcquireSardaukarCommanderAction>(action.body)
+
+        val commander = game.sardaukarCommanders.find { it.id == action.commanderId }
+        if (commander !== null) {
+            val player = getPlayer(gameId, playerName)
+            player.combat.commandersInSupply++
+            game.sardaukarCommanders.removeIf { it.id == action.commanderId }
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        val msg = "$playerName acquired a Sardaukar Commander from ${game.locations.find { it.id == action.commanderId }?.name}"
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION, mapper.toTree(Notification(msg)))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun acquireCommanderSkill(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<AcquireCommanderSkillAction>(action.body)
+
+        val index = game.currentSkills.indexOfFirst { it.url == action.url }
+        if (index != -1) {
+            player.skills.add(game.currentSkills[index])
+            game.currentSkills.removeAt(index)
+            game.currentSkills.add(index, game.skills.draw())
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName acquired a Sardaukar Skill"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun trashCommanderSkill(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<TrashCommanderSkillAction>(action.body)
+
+        val index = player.skills.indexOfFirst { it.url == action.url }
+        if (index != -1) {
+            player.skills.removeAt(index)
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName trashed a Sardaukar Skill"))
+                )
             )
         )
 

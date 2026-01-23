@@ -98,7 +98,19 @@ data class BonusSpiceAction(
     val add: Boolean
 )
 
+data class AcquireSardaukarCommanderAction(
+    val commanderId: Int
+)
+
+data class AcquireCommanderSkillAction(
+    val url: String
+)
+
+data class TrashCommanderSkillAction(
+    val url: String
+)
+
 data class CardAction(
     val url: String,
-    val sourceDeck: Card.SourceDeck
+    val source: Card.SourceDeck
 )
