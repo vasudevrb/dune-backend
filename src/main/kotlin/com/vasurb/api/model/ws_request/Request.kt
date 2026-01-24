@@ -123,6 +123,10 @@ data class TrashTechAction(
     val url: String
 )
 
+data class DeployDuncanAgentAction(
+    val agentId: String
+)
+
 data class CardAction(
     val url: String,
     val source: Card.SourceDeck

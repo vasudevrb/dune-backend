@@ -21,8 +21,9 @@ enum class PlayableCharacter(
     ARMAND_ECAZ("Armend Ecaz", IMPERIUM),
     GLOSSU_RABBAN("Glossu Rabban", IMPERIUM),
     HASIMIR_FENRING("Hasimir Fenring", BLOODLINES),
-    HELEN_MOHIAM("Helen Mohiam", BLOODLINES),
-    CHANI("Chani", BLOODLINES),
+    HELEN_MOHIAM("Helen Mohiam", CharacterSource.OUT),
+    CHANI("Chani", CharacterSource.OUT),
+    DUNCAN_IDAHO("Duncan Idaho", BLOODLINES),
     HELENA_RICHESE("Helena Richese", IMPERIUM),
     ILBAN_RICHESE("Ilban Richese", IMPERIUM),
     LETO_ATREIDES("Leto Atreides", IMPERIUM),
@@ -34,5 +35,5 @@ enum class PlayableCharacter(
 }
 
 enum class CharacterSource {
-    UPRISING, IMPERIUM, BLOODLINES
+    UPRISING, IMPERIUM, BLOODLINES, OUT
 }

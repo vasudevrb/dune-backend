@@ -1145,6 +1145,14 @@ class GameService {
             it.combat.troopsInCombat = 0
             it.combat.wormsInCombat = 0
             it.combat.strength = 0
+            it.combat.commandersInSupply += it.combat.commandersInCombat
+            it.combat.commandersInCombat = 0
+
+            val duncanAgent = it.character?.additionalInfo?.duncanAgentDeployed
+            if (duncanAgent != null) {
+                it.agents.add(duncanAgent)
+                it.character?.additionalInfo?.duncanAgentDeployed = null
+            }
 
             it.techs.forEach { tt -> tt.flipped = false }
             it.private.discardedCards.addAll(it.private.inPlayCards)
@@ -1738,6 +1746,59 @@ class GameService {
                 WSActionResponse.Content(
                     WSActionResponse.Type.SHOW_NOTIFICATION,
                     mapper.toTree(Notification("$playerName trashed a tech"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun deployDuncanAgent(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<DeployDuncanAgentAction>(action.body)
+
+        val location = game.locations.find { it.agents.find { agent -> agent.agentId == action.agentId } != null }
+        recallAgent(gameId, playerName, location, action.agentId)
+
+        val agent = player.agents.find { it.id == action.agentId }
+        if (agent != null) {
+            player.agents.remove(agent)
+            player.character?.additionalInfo?.duncanAgentDeployed = agent
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName deployed an agent to combat"))
                 )
             )
         )
