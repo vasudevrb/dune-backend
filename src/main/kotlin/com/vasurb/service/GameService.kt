@@ -1806,6 +1806,43 @@ class GameService {
         return WSActionResponse(messages)
     }
 
+    fun peekDeckCard(
+        playerName: String,
+        gameId: String
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val nextCard = player.private.drawPile.peek()
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+
+        if (nextCard != null) {
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.SinglePlayer(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(nextCard.url, playerName, DRAW_CARD)))
+                )
+            )
+
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName peeked at their next card"))
+                )
+            )
+        } else {
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("Your deck is empty"))
+                )
+            )
+        }
+
+        return WSActionResponse(messages)
+    }
+
     fun createGame(playerName: String, includeRivals: Boolean, includeBloodlines: Boolean): Game {
         val gameId = "dune${games.size + 1}"
 

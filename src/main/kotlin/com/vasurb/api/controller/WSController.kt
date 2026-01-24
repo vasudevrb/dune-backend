@@ -78,6 +78,7 @@ class WSController(
             FLIP_TECH_TILE -> gameService.flipTechTile(playerName, gameId, action)
             TRASH_TECH_TILE -> gameService.trashTechTile(playerName, gameId, action)
             DEPLOY_DUNCAN_AGENT -> gameService.deployDuncanAgent(playerName, gameId, action)
+            PEEK_DECK_CARD -> gameService.peekDeckCard(playerName, gameId)
             CLEAR_ROUND -> gameService.clearRound(gameId)
         }
 
