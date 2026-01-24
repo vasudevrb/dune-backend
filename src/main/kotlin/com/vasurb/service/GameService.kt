@@ -1146,6 +1146,7 @@ class GameService {
             it.combat.wormsInCombat = 0
             it.combat.strength = 0
 
+            it.techs.forEach { tt -> tt.flipped = false }
             it.private.discardedCards.addAll(it.private.inPlayCards)
             it.private.inPlayCards.clear()
             it.private.discardedCards.addAll(it.private.inHandCards)
