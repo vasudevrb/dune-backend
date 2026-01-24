@@ -55,6 +55,8 @@ class Action(
         ACQUIRE_COMMANDER_SKILL,
         TRASH_COMMANDER_SKILL,
         ACQUIRE_TECH_TILE,
-        TRASH_TECH_TILE
+        FLIP_TECH_TILE,
+        TRASH_TECH_TILE,
+
     }
 }

@@ -644,15 +644,27 @@ class GameService {
 
         when (action.destination) {
             CombatMovementDestination.Combat -> {
-                player.combat.troopsInCombat += 1
-                player.combat.strength += 2
-                player.combat.troopsInGarrison -= 1
+                if (action.unitType == "Commander") {
+                    player.combat.commandersInCombat += 1
+                    player.combat.strength += 2
+                    player.combat.commandersInGarrison -= 1
+                } else {
+                    player.combat.troopsInCombat += 1
+                    player.combat.strength += 2
+                    player.combat.troopsInGarrison -= 1
+                }
             }
 
             CombatMovementDestination.Garrison -> {
-                player.combat.troopsInCombat -= 1
-                player.combat.strength -= 2
-                player.combat.troopsInGarrison += 1
+                if (action.unitType == "Commander") {
+                    player.combat.commandersInCombat -= 1
+                    player.combat.strength -= 2
+                    player.combat.commandersInGarrison += 1
+                } else {
+                    player.combat.troopsInCombat -= 1
+                    player.combat.strength -= 2
+                    player.combat.troopsInGarrison += 1
+                }
             }
 
             CombatMovementDestination.Supply -> {
@@ -1634,6 +1646,54 @@ class GameService {
 
         return WSActionResponse(messages)
     }
+
+    fun flipTechTile(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<FlipTechAction>(action.body)
+
+        val tech = player.techs.find { it.url == action.url }
+        tech?.flipped = action.flipped
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName flipped a tech"))
+                )
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(action.url, playerName, DRAW_CARD)))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
 
     fun trashTechTile(
         playerName: String,

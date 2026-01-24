@@ -114,6 +114,11 @@ data class AcquireTechAction(
     val url: String
 )
 
+data class FlipTechAction(
+    val url: String,
+    val flipped: Boolean
+)
+
 data class TrashTechAction(
     val url: String
 )

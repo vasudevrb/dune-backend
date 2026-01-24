@@ -10,6 +10,8 @@ data class TechTile(
 ): Card {
     override val type: Card.Type = TECH
 
+    var flipped: Boolean = false
+
     class All {
         fun get(): ArrayList<TechTile> {
             val tiles = CardsUrlRetriever.getImageUrls(TECH, BLOODLINES)
