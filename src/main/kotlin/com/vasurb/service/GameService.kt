@@ -210,9 +210,12 @@ class GameService {
         val game = getGame(gameId)
         val player = getPlayer(gameId, playerName)
 
-        val stealablePlayers = game.players.filter { it.name != playerName && it.private.intrigueCards.size > 3 }
+        val stealablePlayers = game.players.filter {
+            val intrigueHandSize = if (it.techs.find { t -> t.url.contains("tech_2") } != null) 6 else 3
+            it.name != playerName && it.private.intrigueCards.size > intrigueHandSize
+        }
         if (stealablePlayers.isEmpty()) {
-            val msg = "No players have more than 3 intrigue cards."
+            val msg = "No players have more than 3 or 5 (Tech) intrigue cards."
             return WSActionResponse(
                 listOf(
                     WSActionResponse.Message(
