@@ -74,6 +74,8 @@ class WSController(
             ACQUIRE_SARDAUKAR_COMMANDER -> gameService.acquireSardaukarCommander(playerName, gameId, action)
             ACQUIRE_COMMANDER_SKILL -> gameService.acquireCommanderSkill(playerName, gameId, action)
             TRASH_COMMANDER_SKILL -> gameService.trashCommanderSkill(playerName, gameId, action)
+            ACQUIRE_TECH_TILE -> gameService.acquireTechTile(playerName, gameId, action)
+            TRASH_TECH_TILE -> gameService.trashTechTile(playerName, gameId, action)
             CLEAR_ROUND -> gameService.clearRound(gameId)
         }
 

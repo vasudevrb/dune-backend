@@ -110,6 +110,14 @@ data class TrashCommanderSkillAction(
     val url: String
 )
 
+data class AcquireTechAction(
+    val url: String
+)
+
+data class TrashTechAction(
+    val url: String
+)
+
 data class CardAction(
     val url: String,
     val source: Card.SourceDeck
