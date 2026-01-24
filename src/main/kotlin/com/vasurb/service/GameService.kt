@@ -1174,6 +1174,7 @@ class GameService {
                     9 -> game.bonusSpice.deepDesert++
                     10 -> game.bonusSpice.haggaBasin++
                     11 -> game.bonusSpice.imperialBasin++
+                    23 -> game.bonusSpice.tueksSietch++
                 }
             }
 
@@ -1402,6 +1403,7 @@ class GameService {
             9 -> if(action.add) game.bonusSpice.deepDesert++ else game.bonusSpice.deepDesert--
             10 -> if(action.add) game.bonusSpice.haggaBasin++ else game.bonusSpice.haggaBasin--
             11 -> if(action.add) game.bonusSpice.imperialBasin++ else game.bonusSpice.imperialBasin--
+            23 -> if(action.add) game.bonusSpice.tueksSietch++ else game.bonusSpice.tueksSietch--
         }
 
         val messages = arrayListOf<WSActionResponse.Message>()
