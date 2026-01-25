@@ -1145,6 +1145,7 @@ class GameService {
         game.currentPlayer = game.firstPlayer
 
         game.players.forEach {
+            it.combat.troopsInSupply += it.combat.troopsInCombat
             it.combat.troopsInCombat = 0
             it.combat.wormsInCombat = 0
             it.combat.strength = 0
@@ -1748,6 +1749,13 @@ class GameService {
         messages.add(
             WSActionResponse.Message(
                 WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(action.url, playerName, DRAW_CARD)))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
                 WSActionResponse.Content(
                     WSActionResponse.Type.SHOW_NOTIFICATION,
                     mapper.toTree(Notification("$playerName trashed a tech"))
@@ -1828,19 +1836,23 @@ class GameService {
                 )
             )
 
-            WSActionResponse.Message(
-                WSActionResponse.AllPlayersExcept(playerName),
-                WSActionResponse.Content(
-                    WSActionResponse.Type.SHOW_NOTIFICATION,
-                    mapper.toTree(Notification("$playerName peeked at their next card"))
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayersExcept(playerName),
+                    WSActionResponse.Content(
+                        WSActionResponse.Type.SHOW_NOTIFICATION,
+                        mapper.toTree(Notification("$playerName peeked at their next card"))
+                    )
                 )
             )
         } else {
-            WSActionResponse.Message(
-                WSActionResponse.SinglePlayer(playerName),
-                WSActionResponse.Content(
-                    WSActionResponse.Type.SHOW_NOTIFICATION,
-                    mapper.toTree(Notification("Your deck is empty"))
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.SinglePlayer(playerName),
+                    WSActionResponse.Content(
+                        WSActionResponse.Type.SHOW_NOTIFICATION,
+                        mapper.toTree(Notification("Your deck is empty"))
+                    )
                 )
             )
         }
@@ -1896,6 +1908,10 @@ class GameService {
 
     fun updatePlayer(player: Player, gameId: String): Game {
         val game = getGame(gameId)
+        if (player.character?.name == "Kota Odax") {
+            player.techs.addAll(game.techs.draw(3))
+        }
+
         game.addOrUpdatePlayer(player.name, player)
         return game
     }
