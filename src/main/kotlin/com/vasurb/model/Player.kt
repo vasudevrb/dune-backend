@@ -46,6 +46,7 @@ data class Player(
     var factionAlliances: ArrayList<Faction> = arrayListOf()
 
     var swordmasterUnlocked: Boolean = false
+    var hasAtomicsToken: Boolean = true
     var makerHookUnlocked: Boolean = false
     var combat: CombatModel = CombatModel()
 

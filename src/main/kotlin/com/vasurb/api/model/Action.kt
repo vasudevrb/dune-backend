@@ -58,6 +58,7 @@ class Action(
         FLIP_TECH_TILE,
         TRASH_TECH_TILE,
         DEPLOY_DUNCAN_AGENT,
-        PEEK_DECK_CARD
+        PEEK_DECK_CARD,
+        USE_FAMILY_ATOMICS
     }
 }

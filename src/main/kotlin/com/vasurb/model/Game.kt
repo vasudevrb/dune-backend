@@ -39,6 +39,7 @@ data class Game(
     val skills: Deck<SardaukarSkill> = Deck(SardaukarSkill.All().get())
 
     var containsRivals = false
+    var containsAtomics = false
     var isStarted = false
     var currentPlayer: String? = null
     var firstPlayer: String? = null
@@ -65,7 +66,6 @@ data class Game(
     @JsonIgnore
     val availableCharacters = PlayableCharacter
         .entries
-        .filter { it.characterSource == CharacterSource.BLOODLINES }
         .toMutableList()
     @JsonIgnore
     val presentedCharacters = mutableMapOf<String, List<PlayableCharacter>>()

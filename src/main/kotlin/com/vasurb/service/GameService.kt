@@ -1860,7 +1860,38 @@ class GameService {
         return WSActionResponse(messages)
     }
 
-    fun createGame(playerName: String, includeRivals: Boolean, includeBloodlines: Boolean): Game {
+    fun useFamilyAtomics(
+        playerName: String,
+        gameId: String
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        player.hasAtomicsToken = false
+
+        game.imperiumRow.clear()
+        game.imperiumRow.addAll(game.imperiumCards.draw(5))
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName used family atomics to clear the imperium row"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun createGame(playerName: String, includeRivals: Boolean, includeBloodlines: Boolean, includeAtomics: Boolean): Game {
         val gameId = "dune${games.size + 1}"
 
         val sources = arrayListOf(UPRISING)
@@ -1868,6 +1899,7 @@ class GameService {
 
         val game = Game(gameId, sources)
         game.containsRivals = includeRivals
+        game.containsAtomics = includeAtomics
         games[gameId] = game
 
         addPlayer(playerName, gameId, isHost = true)
