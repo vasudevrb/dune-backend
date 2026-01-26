@@ -1,6 +1,7 @@
 package com.vasurb.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.vasurb.model.Card.Source.BLOODLINES
 import com.vasurb.model.Objective.*
 import com.vasurb.model.ReserveCard.ReserveType
 import kotlin.collections.mapNotNull
@@ -57,9 +58,9 @@ data class Game(
 
     // BLOODLINES
 
-    val currentTechs = techs.draw(3).toMutableList() as ArrayList<TechTile>
-    val currentSkills = skills.draw(4).toMutableList() as ArrayList<SardaukarSkill>
-    val sardaukarCommanders = SardaukarCommander.All().get()
+    val currentTechs = if (allowedSources.contains(BLOODLINES)) techs.draw(3) else arrayListOf()
+    val currentSkills = if (allowedSources.contains(BLOODLINES)) skills.draw(4) else arrayListOf()
+    val sardaukarCommanders = if (allowedSources.contains(BLOODLINES)) SardaukarCommander.All().get() else arrayListOf()
 
     @JsonIgnore
     val availableObjectives = arrayListOf(DesertMouse, Ornithopter, Crysknife)
