@@ -23,6 +23,8 @@ data class Game(
     @JsonIgnore
     val intrigueCards: Deck<IntrigueCard> = Deck(IntrigueCard.All().get(allowedSources))
     @JsonIgnore
+    val twistedIntrigueCards: Deck<IntrigueCard> = Deck(IntrigueCard.All().getTwistedIntrigues(allowedSources))
+    @JsonIgnore
     val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.All().getConflicts(allowedSources), shuffleAtStart = false)
 
     @JsonIgnore

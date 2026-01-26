@@ -74,6 +74,7 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
             TECH -> "tech_tiles"
             SARDAUKAR_SKILL -> "commander_skills"
             NAVIGATION -> "navigation_cards"
+            TWISTED_INTRIGUE -> "twisted_intrigue_cards"
             else -> "no_op"
         }
     }

@@ -1159,6 +1159,10 @@ class GameService {
                 it.character?.additionalInfo?.duncanAgentDeployed = null
             }
 
+            if (it.character?.name == "Piter De Vries") {
+                it.private.intrigueCards.add(game.twistedIntrigueCards.draw())
+            }
+
             it.techs.forEach { tt -> tt.flipped = false }
             it.private.discardedCards.addAll(it.private.inPlayCards)
             it.private.inPlayCards.clear()
@@ -2020,6 +2024,9 @@ class GameService {
                 }
                 "Staban Tuek" -> {
                     player.private.drawPile.removeIf { c -> c.url.contains("starter_10") }
+                }
+                "Piter De Vries" -> {
+                    player.private.intrigueCards.add(game.twistedIntrigueCards.draw())
                 }
             }
         }
