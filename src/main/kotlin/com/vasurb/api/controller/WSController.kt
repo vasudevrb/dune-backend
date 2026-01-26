@@ -80,6 +80,7 @@ class WSController(
             DEPLOY_DUNCAN_AGENT -> gameService.deployDuncanAgent(playerName, gameId, action)
             PEEK_DECK_CARD -> gameService.peekDeckCard(playerName, gameId)
             USE_FAMILY_ATOMICS -> gameService.useFamilyAtomics(playerName, gameId)
+            SELECT_YRKOON_NAVIGATION_CARD -> gameService.selectYrkoonNavigationCard(playerName, gameId, action)
             CLEAR_ROUND -> gameService.clearRound(gameId)
         }
 

@@ -62,7 +62,7 @@ data class Player(
         val discardedCards: ArrayList<AgentCard> = arrayListOf(),
         @JsonIgnore
         val drawPile: Deck<AgentCard> = Deck(StarterCard.getAll(), discardedCards),
-        val inHandCards: ArrayList<AgentCard> = drawPile.draw(5),
+        val inHandCards: ArrayList<AgentCard> = arrayListOf(),
         val inPlayCards: ArrayList<AgentCard> = arrayListOf(),
         val intrigueCards: ArrayList<IntrigueCard> = arrayListOf(),
         val usedIntrigues: ArrayList<IntrigueCard> = arrayListOf()

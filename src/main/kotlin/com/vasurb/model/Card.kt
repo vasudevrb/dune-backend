@@ -6,7 +6,7 @@ interface Card {
     val source: Source
 
     enum class Type {
-        IMPERIUM, INTRIGUE, CONFLICT, STARTER, RESERVE, CONTRACT, HAGAL, TECH, SARDAUKAR_SKILL
+        IMPERIUM, INTRIGUE, CONFLICT, STARTER, RESERVE, CONTRACT, HAGAL, TECH, SARDAUKAR_SKILL, NAVIGATION
     }
 
     enum class SourceDeck {

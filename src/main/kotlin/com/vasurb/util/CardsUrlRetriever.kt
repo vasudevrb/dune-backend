@@ -73,6 +73,7 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
             HAGAL -> "hagal_cards"
             TECH -> "tech_tiles"
             SARDAUKAR_SKILL -> "commander_skills"
+            NAVIGATION -> "navigation_cards"
             else -> "no_op"
         }
     }

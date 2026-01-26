@@ -86,6 +86,7 @@ class GameService {
         )
 
         game.players.forEach {
+            it.private.inHandCards.addAll(it.private.drawPile.draw(5))
             val response = WSActionResponse.Content(
                 WSActionResponse.Type.UPDATE_PLAYER,
                 mapper.toTree(it, includePrivate = true)
@@ -1917,6 +1918,45 @@ class GameService {
         return WSActionResponse(messages)
     }
 
+    fun selectYrkoonNavigationCard(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<SelectNavigationCardAction>(action.body)
+
+        player.character?.let {
+            val presentedCards = it.additionalInfo.yrkoonPresentedNavigationCards
+            val card = presentedCards.find { it.url == action.url }
+            if (card != null) {
+                it.additionalInfo.yrkoonSelectedNavigationCards.add(card)
+                it.additionalInfo.yrkoonPresentedNavigationCards.remove(card)
+                if (it.additionalInfo.yrkoonPresentedNavigationCards.size < 2) {
+                    it.additionalInfo.yrkoonPresentedNavigationCards.clear()
+                }
+            }
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+
     fun createGame(playerName: String, includeRivals: Boolean, includeBloodlines: Boolean, includeAtomics: Boolean): Game {
         val gameId = "dune${games.size + 1}"
 
@@ -1967,8 +2007,20 @@ class GameService {
     fun updatePlayer(player: Player, gameId: String): Game {
         val game = getGame(gameId)
         player.character?.let {
-            if (it.name == "Kota Odax") {
-                it.additionalInfo.kotaSecretProjects.addAll(game.techs.draw(3))
+            when (it.name) {
+                "Kota Odax" -> {
+                    it.additionalInfo.kotaSecretProjects.addAll(game.techs.draw(3))
+                }
+                "Steersman Y'rkoon" -> {
+                    it.additionalInfo.yrkoonPresentedNavigationCards.addAll(
+                        NavigationCard.All().get().shuffled().take(5)
+                    )
+                    player.resources[Resource.water] = 0
+                    player.private.drawPile.removeIf { c -> c.url.contains("starter_9") }
+                }
+                "Staban Tuek" -> {
+                    player.private.drawPile.removeIf { c -> c.url.contains("starter_10") }
+                }
             }
         }
 

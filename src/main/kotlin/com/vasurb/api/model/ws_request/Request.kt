@@ -129,6 +129,10 @@ data class DeployDuncanAgentAction(
     val agentId: String
 )
 
+data class SelectNavigationCardAction(
+    val url: String
+)
+
 data class CardAction(
     val url: String,
     val source: Card.SourceDeck
