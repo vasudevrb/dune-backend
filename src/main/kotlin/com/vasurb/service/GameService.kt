@@ -1620,11 +1620,21 @@ class GameService {
         val player = getPlayer(gameId, playerName)
         val action = mapper.getAs<AcquireTechAction>(action.body)
 
-        val index = game.currentTechs.indexOfFirst { it.url == action.url }
-        if (index != -1) {
-            player.techs.add(game.currentTechs[index])
-            game.currentTechs.removeAt(index)
-            game.currentTechs.add(index, game.techs.draw())
+        if (action.source == "kota") {
+            player.character?.let {
+                val index = it.additionalInfo.kotaSecretProjects.indexOfFirst { sp -> sp.url == action.url }
+                if (index != -1) {
+                    player.techs.add(it.additionalInfo.kotaSecretProjects[index])
+                    it.additionalInfo.kotaSecretProjects.removeAt(index)
+                }
+            }
+        } else {
+            val index = game.currentTechs.indexOfFirst { it.url == action.url }
+            if (index != -1) {
+                player.techs.add(game.currentTechs[index])
+                game.currentTechs.removeAt(index)
+                game.currentTechs.add(index, game.techs.draw())
+            }
         }
 
         val messages = arrayListOf<WSActionResponse.Message>()
@@ -1646,6 +1656,13 @@ class GameService {
             WSActionResponse.Message(
                 WSActionResponse.AllPlayersExcept(playerName),
                 WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(action.url, playerName, DRAW_CARD)))
             )
         )
 
@@ -1719,9 +1736,18 @@ class GameService {
         val player = getPlayer(gameId, playerName)
         val action = mapper.getAs<TrashTechAction>(action.body)
 
-        val index = player.techs.indexOfFirst { it.url == action.url }
-        if (index != -1) {
-            player.techs.removeAt(index)
+        if (action.source == "kota") {
+            player.character?.let {
+                val index = it.additionalInfo.kotaSecretProjects.indexOfFirst { sp -> sp.url == action.url }
+                if (index != -1) {
+                    it.additionalInfo.kotaSecretProjects.removeAt(index)
+                }
+            }
+        } else {
+            val index = player.techs.indexOfFirst { it.url == action.url }
+            if (index != -1) {
+                player.techs.removeAt(index)
+            }
         }
 
         val messages = arrayListOf<WSActionResponse.Message>()
@@ -1940,8 +1966,10 @@ class GameService {
 
     fun updatePlayer(player: Player, gameId: String): Game {
         val game = getGame(gameId)
-        if (player.character?.name == "Kota Odax") {
-            player.techs.addAll(game.techs.draw(3))
+        player.character?.let {
+            if (it.name == "Kota Odax") {
+                it.additionalInfo.kotaSecretProjects.addAll(game.techs.draw(3))
+            }
         }
 
         game.addOrUpdatePlayer(player.name, player)

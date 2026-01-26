@@ -12,7 +12,8 @@ data class CharacterModel(
 
     data class CharacterAdditionalInfo(
         var signetStatus: Int? = 0,
-        var duncanAgentDeployed: Agent? = null
+        var duncanAgentDeployed: Agent? = null,
+        var kotaSecretProjects: ArrayList<TechTile> = arrayListOf(),
     )
 
     companion object {

@@ -111,7 +111,8 @@ data class TrashCommanderSkillAction(
 )
 
 data class AcquireTechAction(
-    val url: String
+    val url: String,
+    val source: String? //Can be from Kota's Secret Project ability
 )
 
 data class FlipTechAction(
@@ -120,7 +121,8 @@ data class FlipTechAction(
 )
 
 data class TrashTechAction(
-    val url: String
+    val url: String,
+    val source: String? //Can be from Kota's Secret Project ability
 )
 
 data class DeployDuncanAgentAction(
