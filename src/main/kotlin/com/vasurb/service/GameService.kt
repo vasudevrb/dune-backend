@@ -252,7 +252,7 @@ class GameService {
             messages.add(
                 WSActionResponse.Message(
                     WSActionResponse.AllPlayersExcept(it.name),
-                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(it))
                 )
             )
         }
