@@ -35,6 +35,7 @@ data class Location(
             Location("Gather Support", 20),
             Location("Shipping", 21),
             Location("Accept Contract", 22),
+            Location("Tuek's Sietch", 23),
         )
     }
 }

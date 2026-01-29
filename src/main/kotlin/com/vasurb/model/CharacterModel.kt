@@ -11,7 +11,11 @@ data class CharacterModel(
 ) {
 
     data class CharacterAdditionalInfo(
-        var signetStatus: Int? = 0
+        var signetStatus: Int? = 0,
+        var duncanAgentDeployed: Agent? = null,
+        var kotaSecretProjects: ArrayList<TechTile> = arrayListOf(),
+        var yrkoonPresentedNavigationCards: ArrayList<NavigationCard> = arrayListOf(),
+        var yrkoonSelectedNavigationCards: ArrayList<NavigationCard> = arrayListOf(),
     )
 
     companion object {

@@ -1,12 +1,14 @@
 package com.vasurb.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.vasurb.model.Card.Source.BLOODLINES
 import com.vasurb.model.Objective.*
 import com.vasurb.model.ReserveCard.ReserveType
 import kotlin.collections.mapNotNull
 
 data class Game(
     val gameId: String,
+    val allowedSources: List<Card.Source>,
     val locations: List<Location> = Location.All().get(),
     val spyLocations: List<SpyLocation> = SpyLocation.All().get(),
     val players: ArrayList<Player> = arrayListOf()
@@ -14,14 +16,16 @@ data class Game(
 
     val bonusSpice: BonusSpice = BonusSpice()
     @JsonIgnore
-    val imperiumCards: Deck<ImperiumCard> = Deck(ImperiumCard.All().get())
+    val imperiumCards: Deck<ImperiumCard> = Deck(ImperiumCard.All().get(allowedSources))
     @JsonIgnore
     val reserveCards: Map<ReserveType, ArrayList<ReserveCard>> = ReserveCard.All().get()
 
     @JsonIgnore
-    val intrigueCards: Deck<IntrigueCard> = Deck(IntrigueCard.All().get())
+    val intrigueCards: Deck<IntrigueCard> = Deck(IntrigueCard.All().get(allowedSources))
     @JsonIgnore
-    val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.All().getConflicts(), shuffleAtStart = false)
+    val twistedIntrigueCards: Deck<IntrigueCard> = Deck(IntrigueCard.All().getTwistedIntrigues(allowedSources))
+    @JsonIgnore
+    val conflictCards: Deck<ConflictCard> = Deck(ConflictCard.All().getConflicts(allowedSources), shuffleAtStart = false)
 
     @JsonIgnore
     val usedHagalCards: ArrayList<HagalCard> = arrayListOf()
@@ -29,9 +33,16 @@ data class Game(
     val hagalCards: Deck<HagalCard> = Deck(HagalCard.All().get(), reshuffleFrom = usedHagalCards)
 
     @JsonIgnore
-    val contracts: Deck<ContractCard> = Deck(ContractCard.All().get())
+    val contracts: Deck<ContractCard> = Deck(ContractCard.All().get(allowedSources))
+
+    @JsonIgnore
+    val techs: Deck<TechTile> = Deck(TechTile.All().get())
+
+    @JsonIgnore
+    val skills: Deck<SardaukarSkill> = Deck(SardaukarSkill.All().get())
 
     var containsRivals = false
+    var containsAtomics = false
     var isStarted = false
     var currentPlayer: String? = null
     var firstPlayer: String? = null
@@ -46,6 +57,12 @@ data class Game(
 
     val imperiumRow: ArrayList<ImperiumCard> = imperiumCards.draw(5)
     var reserveRow: ArrayList<ReserveCard> = refreshReserveRow()
+
+    // BLOODLINES
+
+    val currentTechs = if (allowedSources.contains(BLOODLINES)) techs.draw(3) else arrayListOf()
+    val currentSkills = if (allowedSources.contains(BLOODLINES)) skills.draw(4) else arrayListOf()
+    val sardaukarCommanders = if (allowedSources.contains(BLOODLINES)) SardaukarCommander.All().get() else arrayListOf()
 
     @JsonIgnore
     val availableObjectives = arrayListOf(DesertMouse, Ornithopter, Crysknife)

@@ -1,11 +1,13 @@
 package com.vasurb.model
 
+import com.vasurb.model.Card.Source.UPRISING
 import com.vasurb.util.CardsUrlRetriever
-import com.vasurb.util.CardsUrlRetriever.Key
+import com.vasurb.util.CardsUrlRetriever.ReserveKey
 
 data class ReserveCard(
     override val url: String,
-    val reserveType: ReserveType
+    val reserveType: ReserveType,
+    override val source: Card.Source = UPRISING
 ) : AgentCard {
     override val type: Card.Type = Card.Type.RESERVE
 
@@ -16,10 +18,9 @@ data class ReserveCard(
     class All {
         fun get(): Map<ReserveType, ArrayList<ReserveCard>> {
             return ReserveType.entries.associateWith { type ->
-                CardsUrlRetriever
-                    .cardImageUrls[Key(Card.Type.RESERVE, type.name)]
-                    ?.map { url -> ReserveCard(url, type) }
-                    ?.toMutableList() as ArrayList<ReserveCard>
+                CardsUrlRetriever.getReserveImageUrls(type)
+                    .map { url -> ReserveCard(url, type) }
+                    .toMutableList() as ArrayList<ReserveCard>
             }
         }
     }

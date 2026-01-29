@@ -1,5 +1,6 @@
 package com.vasurb.model
 
+import com.vasurb.model.CharacterSource.BLOODLINES
 import com.vasurb.model.CharacterSource.IMPERIUM
 import com.vasurb.model.CharacterSource.UPRISING
 
@@ -19,18 +20,24 @@ enum class PlayableCharacter(
     ARIANA_THORVALD("Ariana Thorvald", IMPERIUM),
     ARMAND_ECAZ("Armend Ecaz", IMPERIUM),
     GLOSSU_RABBAN("Glossu Rabban", IMPERIUM),
-    HASIMIR_FENRING("Hasimir Fenring", IMPERIUM),
-    HELEN_MOHAIM("Helen Mohaim", IMPERIUM),
+    HASIMIR_FENRING("Hasimir Fenring", BLOODLINES),
+    HELEN_MOHIAM("Helen Mohiam", BLOODLINES),
+    CHANI("Chani", BLOODLINES),
+    DUNCAN_IDAHO("Duncan Idaho", BLOODLINES),
+    ESMAR_TUEK("Esmar Tuek", BLOODLINES),
+    KOTA_ODAX("Kota Odax", BLOODLINES),
+    STEERSMAN_YRKOON("Steersman Y'rkoon", BLOODLINES),
+    PITER_DE_VRIES("Piter De Vries", BLOODLINES),
     HELENA_RICHESE("Helena Richese", IMPERIUM),
     ILBAN_RICHESE("Ilban Richese", IMPERIUM),
     LETO_ATREIDES("Leto Atreides", IMPERIUM),
-    LIET_KYNES("Liet Kynes", IMPERIUM),
+    LIET_KYNES("Liet Kynes", BLOODLINES),
     MEMNON_THORVALD("Memnon Thorvald", IMPERIUM),
     PAUL_ATREIDES("Paul Atreides", IMPERIUM),
     VLADIMIR_HARKONNEN("Vladimir Harkonnen", IMPERIUM),
     YUNA_MORITANI("Yuna Moritani", IMPERIUM)
 }
 
-enum class CharacterSource{
-    UPRISING, IMPERIUM
+enum class CharacterSource {
+    UPRISING, IMPERIUM, BLOODLINES, OUT
 }

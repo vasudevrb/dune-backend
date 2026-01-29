@@ -1,11 +1,12 @@
 package com.vasurb.service
 
 import com.vasurb.api.controller.GameController.Companion.NUM_PICKABLE_CHARACTERS
-import com.vasurb.api.model.Action
 import com.vasurb.api.model.Action.Type.*
 import com.vasurb.api.model.ws_request.*
 import com.vasurb.exception.ExpiredGameException
 import com.vasurb.model.*
+import com.vasurb.model.Card.Source.BLOODLINES
+import com.vasurb.model.Card.Source.UPRISING
 import com.vasurb.model.Objective.*
 import com.vasurb.util.Util.dec
 import com.vasurb.util.Util.getAs
@@ -85,6 +86,7 @@ class GameService {
         )
 
         game.players.forEach {
+            it.private.inHandCards.addAll(it.private.drawPile.draw(5))
             val response = WSActionResponse.Content(
                 WSActionResponse.Type.UPDATE_PLAYER,
                 mapper.toTree(it, includePrivate = true)
@@ -209,9 +211,12 @@ class GameService {
         val game = getGame(gameId)
         val player = getPlayer(gameId, playerName)
 
-        val stealablePlayers = game.players.filter { it.name != playerName && it.private.intrigueCards.size > 3 }
+        val stealablePlayers = game.players.filter {
+            val intrigueHandSize = if (it.techs.find { t -> t.url.contains("tech_2") } != null) 6 else 3
+            it.name != playerName && it.private.intrigueCards.size > intrigueHandSize
+        }
         if (stealablePlayers.isEmpty()) {
-            val msg = "No players have more than 3 intrigue cards."
+            val msg = "No players have more than 3 or 5 (Tech) intrigue cards."
             return WSActionResponse(
                 listOf(
                     WSActionResponse.Message(
@@ -247,7 +252,7 @@ class GameService {
             messages.add(
                 WSActionResponse.Message(
                     WSActionResponse.AllPlayersExcept(it.name),
-                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+                    WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(it))
                 )
             )
         }
@@ -278,18 +283,18 @@ class GameService {
         val game = getGame(gameId)
         val player = game.players.find { it.name == playerName }
             ?: return WSActionResponse(listOf())
-        val sourceList = when (body.source) {
-            Card.Source.HAND -> player.private.inHandCards
-            Card.Source.PLAY -> player.private.inPlayCards
-            Card.Source.DISCARD -> player.private.discardedCards
-            Card.Source.INTRIGUE -> player.private.intrigueCards
+        val sourceDeckList = when (body.source) {
+            Card.SourceDeck.HAND -> player.private.inHandCards
+            Card.SourceDeck.PLAY -> player.private.inPlayCards
+            Card.SourceDeck.DISCARD -> player.private.discardedCards
+            Card.SourceDeck.INTRIGUE -> player.private.intrigueCards
         }
 
-        val removable = sourceList.find { it.url == body.url }
+        val removable = sourceDeckList.find { it.url == body.url }
         val messages = arrayListOf<WSActionResponse.Message>()
 
         removable?.let {
-            sourceList.remove(it)
+            sourceDeckList.remove(it)
             when (action.type) {
                 USE_CARD -> useCard(it, body, player)
                 DISCARD_CARD -> discardCard(it as AgentCard, body, player)
@@ -325,14 +330,14 @@ class GameService {
     private fun useCard(card: Card, body: CardAction, player: Player) {
         if (card is AgentCard) {
             when (body.source) {
-                Card.Source.HAND -> player.private.inPlayCards.add(card)
-                Card.Source.PLAY -> player.private.inHandCards.add(card)
-                Card.Source.DISCARD -> player.private.inHandCards.add(card)
+                Card.SourceDeck.HAND -> player.private.inPlayCards.add(card)
+                Card.SourceDeck.PLAY -> player.private.inHandCards.add(card)
+                Card.SourceDeck.DISCARD -> player.private.inHandCards.add(card)
                 else -> {}
             }
         } else if (card is IntrigueCard) {
             when (body.source) {
-                Card.Source.INTRIGUE -> player.private.usedIntrigues.add(card)
+                Card.SourceDeck.INTRIGUE -> player.private.usedIntrigues.add(card)
                 else -> {}
             }
         }
@@ -340,7 +345,7 @@ class GameService {
 
     private fun discardCard(card: AgentCard, body: CardAction, player: Player) {
         when (body.source) {
-            Card.Source.HAND -> player.private.discardedCards.add(card)
+            Card.SourceDeck.HAND -> player.private.discardedCards.add(card)
             else -> {}
         }
     }
@@ -643,15 +648,27 @@ class GameService {
 
         when (action.destination) {
             CombatMovementDestination.Combat -> {
-                player.combat.troopsInCombat += 1
-                player.combat.strength += 2
-                player.combat.troopsInGarrison -= 1
+                if (action.unitType == "Commander") {
+                    player.combat.commandersInCombat += 1
+                    player.combat.strength += 2
+                    player.combat.commandersInGarrison -= 1
+                } else {
+                    player.combat.troopsInCombat += 1
+                    player.combat.strength += 2
+                    player.combat.troopsInGarrison -= 1
+                }
             }
 
             CombatMovementDestination.Garrison -> {
-                player.combat.troopsInCombat -= 1
-                player.combat.strength -= 2
-                player.combat.troopsInGarrison += 1
+                if (action.unitType == "Commander") {
+                    player.combat.commandersInCombat -= 1
+                    player.combat.strength -= 2
+                    player.combat.commandersInGarrison += 1
+                } else {
+                    player.combat.troopsInCombat -= 1
+                    player.combat.strength -= 2
+                    player.combat.troopsInGarrison += 1
+                }
             }
 
             CombatMovementDestination.Supply -> {
@@ -688,7 +705,14 @@ class GameService {
                         player.combat.wormsInCombat+= action.quantity
                         player.combat.strength += (3 * action.quantity)
                     }
-                    "Troop" -> player.combat.troopsInGarrison+=action.quantity
+                    "Troop" -> {
+                        player.combat.troopsInGarrison += action.quantity
+                        player.combat.troopsInSupply -= action.quantity
+                    }
+                    "Commander" -> {
+                        player.combat.commandersInGarrison += action.quantity
+                        player.combat.commandersInSupply -= action.quantity
+                    }
                     "Strength" -> player.combat.strength += action.quantity
                 }
             }
@@ -701,7 +725,13 @@ class GameService {
                     }
                     "Troop" -> {
                         val quantity = min(player.combat.troopsInGarrison, action.quantity)
-                        player.combat.troopsInGarrison-=quantity
+                        player.combat.troopsInGarrison -= quantity
+                        player.combat.troopsInSupply += quantity
+                    }
+                    "Commander" -> {
+                        val quantity = min(player.combat.commandersInGarrison, action.quantity)
+                        player.combat.commandersInGarrison -= quantity
+                        player.combat.commandersInSupply += quantity
                     }
                     "Strength" -> {
                         val quantity = min(player.combat.strength, action.quantity)
@@ -1116,10 +1146,24 @@ class GameService {
         game.currentPlayer = game.firstPlayer
 
         game.players.forEach {
+            it.combat.troopsInSupply += it.combat.troopsInCombat
             it.combat.troopsInCombat = 0
             it.combat.wormsInCombat = 0
             it.combat.strength = 0
+            it.combat.commandersInSupply += it.combat.commandersInCombat
+            it.combat.commandersInCombat = 0
 
+            val duncanAgent = it.character?.additionalInfo?.duncanAgentDeployed
+            if (duncanAgent != null) {
+                it.agents.add(duncanAgent)
+                it.character?.additionalInfo?.duncanAgentDeployed = null
+            }
+
+            if (it.character?.name == "Piter De Vries") {
+                it.private.intrigueCards.add(game.twistedIntrigueCards.draw())
+            }
+
+            it.techs.forEach { tt -> tt.flipped = false }
             it.private.discardedCards.addAll(it.private.inPlayCards)
             it.private.inPlayCards.clear()
             it.private.discardedCards.addAll(it.private.inHandCards)
@@ -1136,6 +1180,7 @@ class GameService {
                     9 -> game.bonusSpice.deepDesert++
                     10 -> game.bonusSpice.haggaBasin++
                     11 -> game.bonusSpice.imperialBasin++
+                    23 -> game.bonusSpice.tueksSietch++
                 }
             }
 
@@ -1183,7 +1228,7 @@ class GameService {
 
         while (iterator.hasNext()) {
             val card = iterator.next()
-            useCard(card, CardAction(card.url, Card.Source.HAND), player)
+            useCard(card, CardAction(card.url, Card.SourceDeck.HAND), player)
             iterator.remove()
         }
 
@@ -1364,6 +1409,7 @@ class GameService {
             9 -> if(action.add) game.bonusSpice.deepDesert++ else game.bonusSpice.deepDesert--
             10 -> if(action.add) game.bonusSpice.haggaBasin++ else game.bonusSpice.haggaBasin--
             11 -> if(action.add) game.bonusSpice.imperialBasin++ else game.bonusSpice.imperialBasin--
+            23 -> if(action.add) game.bonusSpice.tueksSietch++ else game.bonusSpice.tueksSietch--
         }
 
         val messages = arrayListOf<WSActionResponse.Message>()
@@ -1421,10 +1467,509 @@ class GameService {
         return WSActionResponse(messages)
     }
 
-    fun createGame(playerName: String, includeRivals: Boolean): Game {
+    fun acquireSardaukarCommander(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<AcquireSardaukarCommanderAction>(action.body)
+
+        val commander = game.sardaukarCommanders.find { it.id == action.commanderId }
+        if (commander !== null) {
+            val player = getPlayer(gameId, playerName)
+            player.combat.commandersInSupply++
+            game.sardaukarCommanders.removeIf { it.id == action.commanderId }
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        val msg = "$playerName acquired a Sardaukar Commander from ${game.locations.find { it.id == action.commanderId }?.name}"
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.SHOW_NOTIFICATION, mapper.toTree(Notification(msg)))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun acquireCommanderSkill(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<AcquireCommanderSkillAction>(action.body)
+
+        val index = game.currentSkills.indexOfFirst { it.url == action.url }
+        if (index != -1) {
+            player.skills.add(game.currentSkills[index])
+            game.currentSkills.removeAt(index)
+            game.currentSkills.add(index, game.skills.draw())
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName acquired a Sardaukar Skill"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun trashCommanderSkill(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<TrashCommanderSkillAction>(action.body)
+
+        val index = player.skills.indexOfFirst { it.url == action.url }
+        if (index != -1) {
+            player.skills.removeAt(index)
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName trashed a Sardaukar Skill"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun acquireTechTile(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<AcquireTechAction>(action.body)
+
+        if (action.source == "kota") {
+            player.character?.let {
+                val index = it.additionalInfo.kotaSecretProjects.indexOfFirst { sp -> sp.url == action.url }
+                if (index != -1) {
+                    player.techs.add(it.additionalInfo.kotaSecretProjects[index])
+                    it.additionalInfo.kotaSecretProjects.removeAt(index)
+                }
+            }
+        } else {
+            val index = game.currentTechs.indexOfFirst { it.url == action.url }
+            if (index != -1) {
+                player.techs.add(game.currentTechs[index])
+                game.currentTechs.removeAt(index)
+                game.currentTechs.add(index, game.techs.draw())
+            }
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(action.url, playerName, DRAW_CARD)))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName acquired a tech"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun flipTechTile(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<FlipTechAction>(action.body)
+
+        val tech = player.techs.find { it.url == action.url }
+        tech?.flipped = action.flipped
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName flipped a tech"))
+                )
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(action.url, playerName, DRAW_CARD)))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+
+    fun trashTechTile(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<TrashTechAction>(action.body)
+
+        if (action.source == "kota") {
+            player.character?.let {
+                val index = it.additionalInfo.kotaSecretProjects.indexOfFirst { sp -> sp.url == action.url }
+                if (index != -1) {
+                    it.additionalInfo.kotaSecretProjects.removeAt(index)
+                }
+            }
+        } else {
+            val index = player.techs.indexOfFirst { it.url == action.url }
+            if (index != -1) {
+                player.techs.removeAt(index)
+            }
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(action.url, playerName, DRAW_CARD)))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName trashed a tech"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun deployDuncanAgent(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<DeployDuncanAgentAction>(action.body)
+
+        val location = game.locations.find { it.agents.find { agent -> agent.agentId == action.agentId } != null }
+        recallAgent(gameId, playerName, location, action.agentId)
+
+        val agent = player.agents.find { it.id == action.agentId }
+        if (agent != null) {
+            player.agents.remove(agent)
+            player.character?.additionalInfo?.duncanAgentDeployed = agent
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName deployed an agent to combat"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun peekDeckCard(
+        playerName: String,
+        gameId: String
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val nextCard = player.private.drawPile.peek()
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+
+        if (nextCard != null) {
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.SinglePlayer(playerName),
+                    WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(nextCard.url, playerName, DRAW_CARD)))
+                )
+            )
+
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.AllPlayersExcept(playerName),
+                    WSActionResponse.Content(
+                        WSActionResponse.Type.SHOW_NOTIFICATION,
+                        mapper.toTree(Notification("$playerName peeked at their next card"))
+                    )
+                )
+            )
+        } else {
+            messages.add(
+                WSActionResponse.Message(
+                    WSActionResponse.SinglePlayer(playerName),
+                    WSActionResponse.Content(
+                        WSActionResponse.Type.SHOW_NOTIFICATION,
+                        mapper.toTree(Notification("Your deck is empty"))
+                    )
+                )
+            )
+        }
+
+        return WSActionResponse(messages)
+    }
+
+    fun useFamilyAtomics(
+        playerName: String,
+        gameId: String
+    ): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        player.hasAtomicsToken = false
+
+        game.imperiumRow.clear()
+        game.imperiumRow.addAll(game.imperiumCards.draw(5))
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName used family atomics to clear the imperium row"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun selectYrkoonNavigationCard(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<SelectNavigationCardAction>(action.body)
+
+        player.character?.let {
+            val presentedCards = it.additionalInfo.yrkoonPresentedNavigationCards
+            val card = presentedCards.find { it.url == action.url }
+            if (card != null) {
+                it.additionalInfo.yrkoonSelectedNavigationCards.add(card)
+                it.additionalInfo.yrkoonPresentedNavigationCards.remove(card)
+                if (it.additionalInfo.yrkoonPresentedNavigationCards.size < 2) {
+                    it.additionalInfo.yrkoonPresentedNavigationCards.clear()
+                }
+            }
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+
+    fun createGame(playerName: String, includeRivals: Boolean, includeBloodlines: Boolean, includeAtomics: Boolean): Game {
         val gameId = "dune${games.size + 1}"
-        val game = Game(gameId)
+
+        val sources = arrayListOf(UPRISING)
+        if (includeBloodlines) sources.add(BLOODLINES)
+
+        val game = Game(gameId, sources)
         game.containsRivals = includeRivals
+        game.containsAtomics = includeAtomics
         games[gameId] = game
 
         addPlayer(playerName, gameId, isHost = true)
@@ -1465,6 +2010,27 @@ class GameService {
 
     fun updatePlayer(player: Player, gameId: String): Game {
         val game = getGame(gameId)
+        player.character?.let {
+            when (it.name) {
+                "Kota Odax" -> {
+                    it.additionalInfo.kotaSecretProjects.addAll(game.techs.draw(3))
+                }
+                "Steersman Y'rkoon" -> {
+                    it.additionalInfo.yrkoonPresentedNavigationCards.addAll(
+                        NavigationCard.All().get().shuffled().take(5)
+                    )
+                    player.resources[Resource.water] = 0
+                    player.private.drawPile.removeIf { c -> c.url.contains("starter_9") }
+                }
+                "Staban Tuek" -> {
+                    player.private.drawPile.removeIf { c -> c.url.contains("starter_10") }
+                }
+                "Piter De Vries" -> {
+                    player.private.intrigueCards.add(game.twistedIntrigueCards.draw())
+                }
+            }
+        }
+
         game.addOrUpdatePlayer(player.name, player)
         return game
     }

@@ -46,8 +46,12 @@ data class Player(
     var factionAlliances: ArrayList<Faction> = arrayListOf()
 
     var swordmasterUnlocked: Boolean = false
+    var hasAtomicsToken: Boolean = true
     var makerHookUnlocked: Boolean = false
     var combat: CombatModel = CombatModel()
+
+    val skills = arrayListOf<SardaukarSkill>()
+    val techs = arrayListOf<TechTile>()
 
     val private: Private = Private()
 
@@ -58,7 +62,7 @@ data class Player(
         val discardedCards: ArrayList<AgentCard> = arrayListOf(),
         @JsonIgnore
         val drawPile: Deck<AgentCard> = Deck(StarterCard.getAll(), discardedCards),
-        val inHandCards: ArrayList<AgentCard> = drawPile.draw(5),
+        val inHandCards: ArrayList<AgentCard> = arrayListOf(),
         val inPlayCards: ArrayList<AgentCard> = arrayListOf(),
         val intrigueCards: ArrayList<IntrigueCard> = arrayListOf(),
         val usedIntrigues: ArrayList<IntrigueCard> = arrayListOf()

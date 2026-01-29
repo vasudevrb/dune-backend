@@ -98,7 +98,42 @@ data class BonusSpiceAction(
     val add: Boolean
 )
 
+data class AcquireSardaukarCommanderAction(
+    val commanderId: Int
+)
+
+data class AcquireCommanderSkillAction(
+    val url: String
+)
+
+data class TrashCommanderSkillAction(
+    val url: String
+)
+
+data class AcquireTechAction(
+    val url: String,
+    val source: String? //Can be from Kota's Secret Project ability
+)
+
+data class FlipTechAction(
+    val url: String,
+    val flipped: Boolean
+)
+
+data class TrashTechAction(
+    val url: String,
+    val source: String? //Can be from Kota's Secret Project ability
+)
+
+data class DeployDuncanAgentAction(
+    val agentId: String
+)
+
+data class SelectNavigationCardAction(
+    val url: String
+)
+
 data class CardAction(
     val url: String,
-    val source: Card.Source
+    val source: Card.SourceDeck
 )

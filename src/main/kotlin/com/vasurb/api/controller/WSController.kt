@@ -71,6 +71,16 @@ class WSController(
             BREAK_SHIELD_WALL -> gameService.breakShieldWall(playerName, gameId)
             GET_HAGAL_CARD -> gameService.getHagalCard(playerName, gameId)
             RESHUFFLE_HAGAL_CARDS -> gameService.reshuffleHagalCards(gameId)
+            ACQUIRE_SARDAUKAR_COMMANDER -> gameService.acquireSardaukarCommander(playerName, gameId, action)
+            ACQUIRE_COMMANDER_SKILL -> gameService.acquireCommanderSkill(playerName, gameId, action)
+            TRASH_COMMANDER_SKILL -> gameService.trashCommanderSkill(playerName, gameId, action)
+            ACQUIRE_TECH_TILE -> gameService.acquireTechTile(playerName, gameId, action)
+            FLIP_TECH_TILE -> gameService.flipTechTile(playerName, gameId, action)
+            TRASH_TECH_TILE -> gameService.trashTechTile(playerName, gameId, action)
+            DEPLOY_DUNCAN_AGENT -> gameService.deployDuncanAgent(playerName, gameId, action)
+            PEEK_DECK_CARD -> gameService.peekDeckCard(playerName, gameId)
+            USE_FAMILY_ATOMICS -> gameService.useFamilyAtomics(playerName, gameId)
+            SELECT_YRKOON_NAVIGATION_CARD -> gameService.selectYrkoonNavigationCard(playerName, gameId, action)
             CLEAR_ROUND -> gameService.clearRound(gameId)
         }
 

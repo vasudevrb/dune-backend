@@ -1,5 +1,7 @@
 package com.vasurb.model
 
+import java.util.function.Predicate
+
 data class Deck<T: Card>(
     val cards: ArrayList<T>,
     val reshuffleFrom: ArrayList<T>? = null,
@@ -35,6 +37,10 @@ data class Deck<T: Card>(
         cards.addAll(reshuffleFrom?.shuffled() ?: arrayListOf())
         reshuffleFrom?.clear()
         cards.shuffle()
+    }
+
+    fun removeIf(filter: (T) -> Boolean) {
+        cards.removeIf(filter)
     }
 
     fun size(): Int = cards.size

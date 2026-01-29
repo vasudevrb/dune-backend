@@ -1,5 +1,7 @@
 package com.vasurb.model
 
+import com.vasurb.model.Card.Source
+import com.vasurb.model.Card.Source.UPRISING
 import com.vasurb.util.CardsUrlRetriever
 import com.vasurb.util.CardsUrlRetriever.Key
 
@@ -74,16 +76,21 @@ import com.vasurb.util.CardsUrlRetriever.Key
  * Overthrow: 1
  */
 data class ImperiumCard(
-    override val url: String
+    override val url: String,
+    override val source: Source
 ) : AgentCard {
 
     override val type: Card.Type = Card.Type.IMPERIUM
 
     class All {
-        fun get(): ArrayList<ImperiumCard> {
-            val cards = CardsUrlRetriever.cardImageUrls[Key(Card.Type.IMPERIUM)]
-                ?.map { url -> ImperiumCard(url) }
-                ?.toMutableList() as ArrayList<ImperiumCard>
+        fun get(allowedSources: List<Source> = listOf(UPRISING)): ArrayList<ImperiumCard> {
+            val cards = Source.entries
+                .filter { allowedSources.contains(it) }
+                .flatMap { source ->
+                    CardsUrlRetriever.getImageUrls(Card.Type.IMPERIUM, source)
+                        .map { url -> ImperiumCard(url, source) }
+                }
+                .toMutableList() as ArrayList<ImperiumCard>
 
             return ArrayList(cards)
         }
