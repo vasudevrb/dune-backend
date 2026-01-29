@@ -57,7 +57,7 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
     fun getUrls(directory: String, resolver: PathMatchingResourcePatternResolver): List<String> {
         val classPathDir = "classpath:/static/${directory}/*"
         return resolver.getResources(classPathDir)
-            .filter { it.exists() && !it.file.isDirectory }
+            .filter { it.exists() && it.isReadable }
             .map { "${serverUrl}/${directory}/${it.filename}" }
     }
 
