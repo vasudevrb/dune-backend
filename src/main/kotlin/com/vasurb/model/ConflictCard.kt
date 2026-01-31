@@ -25,6 +25,7 @@ data class ConflictCard(
                     CardsUrlRetriever.getConflictImageUrls(source, LEVEL_1)
                         .map { url -> ConflictCard(url, source, LEVEL_1) }
                 }
+                .shuffled()
                 .toMutableList() as ArrayList<ConflictCard>
 
             val level2 = Source.entries
@@ -33,6 +34,7 @@ data class ConflictCard(
                     CardsUrlRetriever.getConflictImageUrls(source, LEVEL_2)
                         .map { url -> ConflictCard(url, source, LEVEL_2) }
                 }
+                .shuffled()
                 .toMutableList() as ArrayList<ConflictCard>
 
             val level3 = Source.entries
@@ -41,10 +43,11 @@ data class ConflictCard(
                     CardsUrlRetriever.getConflictImageUrls(source, LEVEL_3)
                         .map { url -> ConflictCard(url, source, LEVEL_3) }
                 }
+                .shuffled()
                 .toMutableList() as ArrayList<ConflictCard>
 
             return level1.take(1)
-                .plus(level2.take(4))
+                .plus(level2.take(5))
                 .plus(level3)
                 .toMutableList() as ArrayList<ConflictCard>
         }
