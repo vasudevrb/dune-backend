@@ -69,6 +69,7 @@ data class Game(
     @JsonIgnore
     val availableCharacters = PlayableCharacter
         .entries
+        .filter { it.characterSource != CharacterSource.OUT }
         .toMutableList()
     @JsonIgnore
     val presentedCharacters = mutableMapOf<String, List<PlayableCharacter>>()
