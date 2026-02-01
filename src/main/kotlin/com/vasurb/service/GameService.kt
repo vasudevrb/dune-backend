@@ -1968,6 +1968,7 @@ class GameService {
         if (includeBloodlines) sources.add(BLOODLINES)
 
         val game = Game(gameId, sources)
+        println("$gameId imperium deck: ${game.imperiumRow.map { it.url }}")
         game.containsRivals = includeRivals
         game.containsAtomics = includeAtomics
         games[gameId] = game
