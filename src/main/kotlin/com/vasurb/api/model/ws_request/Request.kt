@@ -89,7 +89,7 @@ data class SetFactionInfluence(
     val influenceLevel: Int
 )
 
-data class SetFeydSignetStatus(
+data class SetSignetTrackStatus(
     val status: Int,
 )
 

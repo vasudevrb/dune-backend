@@ -1,7 +1,6 @@
 package com.vasurb.api.controller
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.vasurb.api.model.Action
 import com.vasurb.api.model.Action.Type.*
 import com.vasurb.api.model.ws_request.WSActionRequest
 import com.vasurb.api.model.ws_request.WSActionResponse
@@ -11,7 +10,6 @@ import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.CrossOrigin
 import java.security.Principal
 
 @Controller
@@ -56,7 +54,7 @@ class WSController(
             END_TURN -> gameService.endTurn(gameId)
             REVEAL -> gameService.reveal(playerName, gameId)
             SET_FACTION_INFLUENCE -> gameService.setFactionInfluence(playerName, gameId, action)
-            SET_FEYD_SIGNET_STATUS -> gameService.setFeydSignetStatus(playerName, gameId, action)
+            SET_FEYD_SIGNET_STATUS, SET_CHANI_SIGNET_STATUS -> gameService.setSignetTrackStatus(playerName, gameId, action)
             UNLOCK_SWORDMASTER -> gameService.unlockSwordmaster(playerName, gameId)
             GET_HIGH_COUNCIL -> gameService.getHighCouncil(playerName, gameId)
             UNLOCK_MAKER_HOOK -> gameService.unlockMakerHook(playerName, gameId)

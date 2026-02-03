@@ -1279,13 +1279,13 @@ class GameService {
         return WSActionResponse(messages)
     }
 
-    fun setFeydSignetStatus(
+    fun setSignetTrackStatus(
         playerName: String,
         gameId: String,
         action: WSActionRequest
     ): WSActionResponse {
         val player = getPlayer(gameId, playerName)
-        val action = mapper.getAs<SetFeydSignetStatus>(action.body)
+        val action = mapper.getAs<SetSignetTrackStatus>(action.body)
         val character = player.character
         if (character != null) {
             character.additionalInfo.signetStatus = action.status
