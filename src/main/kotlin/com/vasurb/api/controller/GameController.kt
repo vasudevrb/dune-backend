@@ -35,7 +35,7 @@ class GameController(val gameService: GameService) {
         @RequestParam includeAtomics: Boolean = false
     ): CreateGameResponse {
         val game = gameService.createGame(playerName, includeRivals, includeBloodlines, includeAtomics)
-        return CreateGameResponse(game.gameId, gameService.getTurnOrder(game.gameId, playerName))
+        return CreateGameResponse(game.gameId, gameService.getTurnOrder(game.gameId, playerName), game)
     }
 
     @GetMapping("/join-game")
@@ -53,7 +53,7 @@ class GameController(val gameService: GameService) {
                 JoinGameResponse.JoinGameState.JOINED
             }
         }
-        return JoinGameResponse(gameId, joinState, gameService.getTurnOrder(gameId, playerName))
+        return JoinGameResponse(gameId, joinState, gameService.getTurnOrder(gameId, playerName), game)
     }
 
     @PostMapping("/characters")

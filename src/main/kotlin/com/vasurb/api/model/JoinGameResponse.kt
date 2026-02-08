@@ -1,10 +1,13 @@
 package com.vasurb.api.model
 
+import com.vasurb.model.Game
+
 
 data class JoinGameResponse(
     val gameId: String?,
     val joinGameState: JoinGameState,
-    val turnOrder: Int
+    val turnOrder: Int,
+    val game: Game
 ) {
     enum class JoinGameState {
         JOINED,
