@@ -2049,7 +2049,7 @@ class GameService {
             .shuffled()
             .take(if(game.containsRivals) game.availableCharacters.size else NUM_PICKABLE_CHARACTERS)
 
-        characters.forEach { game.availableCharacters.remove(it) }
+        if (!game.containsRivals) characters.forEach { game.availableCharacters.remove(it) }
         println("For player ${playerName} returning: ${characters}. New size ${game.availableCharacters.size} : ${game.availableCharacters}")
         if (!game.containsRivals) { game.presentedCharacters[playerName] = characters }
         return characters
