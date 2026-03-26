@@ -1960,6 +1960,42 @@ class GameService {
         return WSActionResponse(messages)
     }
 
+    fun revealYrkoonNavigationCard(
+        playerName: String,
+        gameId: String,
+        action: WSActionRequest
+    ): WSActionResponse {
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<RevealNavigationCardAction>(action.body)
+
+        val navCards = player.character?.additionalInfo?.yrkoonSelectedNavigationCards
+            ?: return WSActionResponse(arrayListOf())
+
+        val card = navCards.find { it.url == action.url }
+        val index = navCards.indexOf(card)
+        if (index != -1) {
+            card?.revealed = action.revealed
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+
 
     fun createGame(playerName: String, includeRivals: Boolean, includeBloodlines: Boolean, includeAtomics: Boolean): Game {
         val gameId = "dune${games.size + 1}"

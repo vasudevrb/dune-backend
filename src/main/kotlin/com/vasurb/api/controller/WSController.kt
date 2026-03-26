@@ -79,6 +79,7 @@ class WSController(
             PEEK_DECK_CARD -> gameService.peekDeckCard(playerName, gameId)
             USE_FAMILY_ATOMICS -> gameService.useFamilyAtomics(playerName, gameId)
             SELECT_YRKOON_NAVIGATION_CARD -> gameService.selectYrkoonNavigationCard(playerName, gameId, action)
+            REVEAL_YRKOON_NAVIGATION_CARD -> gameService.revealYrkoonNavigationCard(playerName, gameId, action)
             CLEAR_ROUND -> gameService.clearRound(gameId)
         }
 

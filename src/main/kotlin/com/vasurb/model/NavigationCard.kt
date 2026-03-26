@@ -6,7 +6,8 @@ import com.vasurb.util.CardsUrlRetriever
 
 data class NavigationCard(
     override val url: String,
-    override val source: Card.Source = BLOODLINES
+    override val source: Card.Source = BLOODLINES,
+    var revealed: Boolean = false,
 ) : Card {
     override val type: Card.Type = NAVIGATION
 

@@ -133,6 +133,11 @@ data class SelectNavigationCardAction(
     val url: String
 )
 
+data class RevealNavigationCardAction(
+    val url: String,
+    val revealed: Boolean
+)
+
 data class CardAction(
     val url: String,
     val source: Card.SourceDeck
