@@ -45,6 +45,9 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
                         .map {reserveType ->
                             cardImageUrls[ReserveKey(UPRISING, reserveType)] = getUrls(getReserveDirectory(reserveType), resolver)
                         }
+                } else if (cardType == TWISTED_INTRIGUE) {
+                    Card.Source.entries
+                        .map { source -> cardImageUrls[Key(cardType, source)] = getUrls(getDirectory(cardType, BLOODLINES), resolver) }
                 } else {
                     Card.Source.entries
                         .map { source -> cardImageUrls[Key(cardType, source)] = getUrls(getDirectory(cardType, source), resolver) }
@@ -74,7 +77,7 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
             TECH -> "tech_tiles"
             SARDAUKAR_SKILL -> "commander_skills"
             NAVIGATION -> "navigation_cards"
-            TWISTED_INTRIGUE -> "twisted_intrigue_cards"
+            TWISTED_INTRIGUE if source == BLOODLINES -> "twisted_intrigue_cards"
             else -> "no_op"
         }
     }
