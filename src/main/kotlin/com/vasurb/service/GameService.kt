@@ -1479,7 +1479,7 @@ class GameService {
         val commander = game.sardaukarCommanders.find { it.id == action.commanderId }
         if (commander !== null) {
             val player = getPlayer(gameId, playerName)
-            player.combat.commandersInSupply++
+            player.combat.commandersInGarrison++
             game.sardaukarCommanders.removeIf { it.id == action.commanderId }
         }
 
