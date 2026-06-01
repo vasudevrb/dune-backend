@@ -95,6 +95,6 @@ class GameController(val gameService: GameService) {
     }
 
     companion object {
-        const val NUM_PICKABLE_CHARACTERS = 2
+        const val NUM_PICKABLE_CHARACTERS = 6
     }
 }

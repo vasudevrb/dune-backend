@@ -2081,13 +2081,13 @@ class GameService {
     fun getPresentableCharacters(playerName: String, gameId: String): List<PlayableCharacter> {
         val game = getGame(gameId)
         println("Current characters: ${game.availableCharacters.size}: ${game.availableCharacters}")
-        val characters = game.presentedCharacters[playerName] ?: game.availableCharacters
+        val characters = game.presentedCharacters["pool"] ?: game.availableCharacters
             .shuffled()
             .take(if(game.containsRivals) game.availableCharacters.size else NUM_PICKABLE_CHARACTERS)
 
         if (!game.containsRivals) characters.forEach { game.availableCharacters.remove(it) }
         println("For player ${playerName} returning: ${characters}. New size ${game.availableCharacters.size} : ${game.availableCharacters}")
-        if (!game.containsRivals) { game.presentedCharacters[playerName] = characters }
+        if (!game.containsRivals) { game.presentedCharacters["pool"] = characters }
         return characters
     }
 
