@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.vasurb.model.Card.Source.BLOODLINES
 import com.vasurb.model.Objective.*
 import com.vasurb.model.ReserveCard.ReserveType
+import com.vasurb.util.Util.filterIf
 import kotlin.collections.mapNotNull
 
 data class Game(
     val gameId: String,
+    val tier: Tier,
     val allowedSources: List<Card.Source>,
     val locations: List<Location> = Location.All().get(),
     val spyLocations: List<SpyLocation> = SpyLocation.All().get(),
@@ -77,7 +79,9 @@ data class Game(
     val availableCharacters = PlayableCharacter
         .entries
         .filter { allowedCharacterSources.contains(it.characterSource) }
+        .filterIf(allowedCharacterSources.contains(CharacterSource.BLOODLINES)) { it.tier == tier }
         .toMutableList()
+
     @JsonIgnore
     val presentedCharacters = mutableMapOf<String, List<PlayableCharacter>>()
     @JsonIgnore

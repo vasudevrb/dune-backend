@@ -1,43 +1,52 @@
 package com.vasurb.model
 
 import com.vasurb.model.CharacterSource.BLOODLINES
-import com.vasurb.model.CharacterSource.IMPERIUM
+import com.vasurb.model.CharacterSource.OUT
 import com.vasurb.model.CharacterSource.UPRISING
 
 enum class PlayableCharacter(
     val readableName: String,
-    val characterSource: CharacterSource = UPRISING
+    val tier: Tier,
+    val characterSource: CharacterSource = UPRISING,
 ) {
-    MARGOT_FENRING("Margot Fenring"),
-    FEYD_RAUTHA("Feyd Rautha"),
-    AMBER_METULLI("Amber Metulli"),
-    LADY_JESSICA("Lady Jessica"),
-    MUAD_DIB("Muad'Dib"),
-    GURNEY_HALLECK("Gurney Halleck"),
-    EMPEROR_SHADDAM("Shaddam Corrino"),
-    PRINCESS_IRULAN("Princess Irulan"),
-    STABAN_TUEK("Staban Tuek"),
-    ARIANA_THORVALD("Ariana Thorvald", IMPERIUM),
-    ARMAND_ECAZ("Armend Ecaz", IMPERIUM),
-    GLOSSU_RABBAN("Glossu Rabban", IMPERIUM),
-    MEMNON_THORVALD("Memnon Thorvald", IMPERIUM),
-    PAUL_ATREIDES("Paul Atreides", IMPERIUM),
-    VLADIMIR_HARKONNEN("Vladimir Harkonnen", IMPERIUM),
-    YUNA_MORITANI("Yuna Moritani", IMPERIUM),
-    HASIMIR_FENRING("Hasimir Fenring", BLOODLINES),
-    HELEN_MOHIAM("Helen Mohiam", BLOODLINES),
-    CHANI("Chani", BLOODLINES),
-    DUNCAN_IDAHO("Duncan Idaho", BLOODLINES),
-    ESMAR_TUEK("Esmar Tuek", BLOODLINES),
-    KOTA_ODAX("Kota Odax", BLOODLINES),
-    STEERSMAN_YRKOON("Steersman Y'rkoon", BLOODLINES),
-    PITER_DE_VRIES("Piter De Vries", BLOODLINES),
-    HELENA_RICHESE("Helena Richese", IMPERIUM),
-    ILBAN_RICHESE("Ilban Richese", IMPERIUM),
-    LETO_ATREIDES("Leto Atreides", IMPERIUM),
-    LIET_KYNES("Liet Kynes", BLOODLINES),
+  STABAN_TUEK("Staban Tuek", Tier.A),
+  ESMAR_TUEK("Esmar Tuek", Tier.A, BLOODLINES),
+  HASIMIR_FENRING("Hasimir Fenring", Tier.A, BLOODLINES),
+  KOTA_ODAX("Kota Odax", Tier.A, BLOODLINES),
+  LIET_KYNES("Liet Kynes", Tier.A, BLOODLINES),
+  ARIANA_THORVALD("Ariana Thorvald", Tier.A, BLOODLINES),
+  MEMNON_THORVALD("Memnon Thorvald", Tier.A, BLOODLINES),
+
+  STEERSMAN_YRKOON("Steersman Y'rkoon", Tier.B, BLOODLINES),
+  CHANI("Chani", Tier.B, BLOODLINES),
+  DUNCAN_IDAHO("Duncan Idaho", Tier.B, BLOODLINES),
+  HELEN_MOHIAM("Helen Mohiam", Tier.B, BLOODLINES),
+  PRINCESS_IRULAN("Princess Irulan", Tier.B),
+  AMBER_METULLI("Amber Metulli", Tier.B),
+  GURNEY_HALLECK("Gurney Halleck", Tier.B),
+  PAUL_ATREIDES("Paul Atreides", Tier.B, BLOODLINES),
+  ILBAN_RICHESE("Ilban Richese", Tier.B, BLOODLINES),
+  PITER_DE_VRIES("Piter De Vries", Tier.B, BLOODLINES),
+
+  VLADIMIR_HARKONNEN("Vladimir Harkonnen", Tier.C, BLOODLINES),
+  FEYD_RAUTHA("Feyd Rautha", Tier.C),
+  EMPEROR_SHADDAM("Shaddam Corrino", Tier.C),
+  MARGOT_FENRING("Margot Fenring", Tier.C),
+  LADY_JESSICA("Lady Jessica", Tier.C),
+  YUNA_MORITANI("Yuna Moritani", Tier.C, BLOODLINES),
+  ARMAND_ECAZ("Armend Ecaz", Tier.C, BLOODLINES),
+  LETO_ATREIDES("Leto Atreides", Tier.C, BLOODLINES),
+  MUAD_DIB("Muad'Dib", Tier.C),
+
+
+  HELENA_RICHESE("Helena Richese", Tier.C, OUT),
+  GLOSSU_RABBAN("Glossu Rabban", Tier.A, OUT),
 }
 
 enum class CharacterSource {
     UPRISING, IMPERIUM, BLOODLINES, OUT
+}
+
+enum class Tier {
+  A, B, C
 }

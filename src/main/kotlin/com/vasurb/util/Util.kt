@@ -103,6 +103,10 @@ object Util {
         return polled
     }
 
+  fun <T> List<T>.filterIf(condition: Boolean, predicate: (T) -> Boolean): List<T> =
+    if (condition) filter(predicate) else this
+
+
     fun <K> MutableMap<K, Int>.inc(key: K, quantity: Int = 1): Int = merge(key, quantity, Math::addExact)!!
     fun <K> MutableMap<K, Int>.dec(key: K, quantity: Int = 1): Int = merge(key, quantity * -1, Math::addExact)!!
 }

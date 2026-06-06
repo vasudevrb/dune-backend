@@ -2003,7 +2003,7 @@ class GameService {
         val sources = arrayListOf(UPRISING)
         if (includeBloodlines) sources.add(BLOODLINES)
 
-        val game = Game(gameId, sources)
+        val game = Game(gameId, Tier.entries.toTypedArray().random(), sources)
         println("$gameId imperium deck: ${game.imperiumRow.map { it.url }}")
         game.containsRivals = includeRivals
         game.containsAtomics = includeAtomics
