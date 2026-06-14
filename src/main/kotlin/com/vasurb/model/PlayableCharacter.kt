@@ -28,18 +28,18 @@ enum class PlayableCharacter(
   ILBAN_RICHESE("Ilban Richese", Tier.B, BLOODLINES),
   PITER_DE_VRIES("Piter De Vries", Tier.B, BLOODLINES),
 
-  VLADIMIR_HARKONNEN("Vladimir Harkonnen", Tier.C, BLOODLINES),
-  FEYD_RAUTHA("Feyd Rautha", Tier.C),
-  EMPEROR_SHADDAM("Shaddam Corrino", Tier.C),
-  MARGOT_FENRING("Margot Fenring", Tier.C),
-  LADY_JESSICA("Lady Jessica", Tier.C),
-  YUNA_MORITANI("Yuna Moritani", Tier.C, BLOODLINES),
-  ARMAND_ECAZ("Armend Ecaz", Tier.C, BLOODLINES),
-  LETO_ATREIDES("Leto Atreides", Tier.C, BLOODLINES),
-  MUAD_DIB("Muad'Dib", Tier.C),
+//  VLADIMIR_HARKONNEN("Vladimir Harkonnen", Tier.C, BLOODLINES),
+//  FEYD_RAUTHA("Feyd Rautha", Tier.C),
+//  EMPEROR_SHADDAM("Shaddam Corrino", Tier.C),
+//  MARGOT_FENRING("Margot Fenring", Tier.C),
+//  LADY_JESSICA("Lady Jessica", Tier.C),
+//  YUNA_MORITANI("Yuna Moritani", Tier.C, BLOODLINES),
+//  ARMAND_ECAZ("Armend Ecaz", Tier.C, BLOODLINES),
+//  LETO_ATREIDES("Leto Atreides", Tier.C, BLOODLINES),
+//  MUAD_DIB("Muad'Dib", Tier.C),
 
 
-  HELENA_RICHESE("Helena Richese", Tier.C, OUT),
+//  HELENA_RICHESE("Helena Richese", Tier.C, OUT),
   GLOSSU_RABBAN("Glossu Rabban", Tier.A, OUT),
 }
 
@@ -48,5 +48,5 @@ enum class CharacterSource {
 }
 
 enum class Tier {
-  A, B, C
+  A, B
 }
