@@ -34,11 +34,10 @@ enum class PlayableCharacter(
   MARGOT_FENRING("Margot Fenring", Tier.C),
   LADY_JESSICA("Lady Jessica", Tier.C),
   YUNA_MORITANI("Yuna Moritani", Tier.C, BLOODLINES),
-  ARMAND_ECAZ("Armend Ecaz", Tier.C, BLOODLINES),
   LETO_ATREIDES("Leto Atreides", Tier.C, BLOODLINES),
   MUAD_DIB("Muad'Dib", Tier.C),
 
-
+  ARMAND_ECAZ("Armend Ecaz", Tier.C, OUT),
   HELENA_RICHESE("Helena Richese", Tier.C, OUT),
   GLOSSU_RABBAN("Glossu Rabban", Tier.A, OUT),
 }
