@@ -43,5 +43,10 @@ data class Deck<T: Card>(
         cards.removeIf(filter)
     }
 
+  fun getAndRemove(filter: (T) -> Boolean): T? {
+    val index = cards.indexOfFirst { filter(it)}
+    return if (index != -1) cards.removeAt(index) else null
+  }
+
     fun size(): Int = cards.size
 }

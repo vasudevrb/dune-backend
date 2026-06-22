@@ -1741,10 +1741,13 @@ class GameService {
         val player = getPlayer(gameId, playerName)
         val action = mapper.getAs<TrashTechAction>(action.body)
 
+        var suppressNotification = false
+
         if (action.source == "kota") {
             player.character?.let {
                 val index = it.additionalInfo.kotaSecretProjects.indexOfFirst { sp -> sp.url == action.url }
                 if (index != -1) {
+                    suppressNotification = true
                     it.additionalInfo.kotaSecretProjects.removeAt(index)
                 }
             }
@@ -1777,22 +1780,24 @@ class GameService {
             )
         )
 
-        messages.add(
+        if(!suppressNotification) {
+          messages.add(
             WSActionResponse.Message(
-                WSActionResponse.AllPlayersExcept(playerName),
-                WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(action.url, playerName, DRAW_CARD)))
+              WSActionResponse.AllPlayersExcept(playerName),
+              WSActionResponse.Content(WSActionResponse.Type.CARD_USED, mapper.toTree(CardUsed(action.url, playerName, DRAW_CARD)))
             )
-        )
+          )
 
-        messages.add(
+          messages.add(
             WSActionResponse.Message(
-                WSActionResponse.AllPlayersExcept(playerName),
-                WSActionResponse.Content(
-                    WSActionResponse.Type.SHOW_NOTIFICATION,
-                    mapper.toTree(Notification("$playerName trashed a tech"))
-                )
+              WSActionResponse.AllPlayersExcept(playerName),
+              WSActionResponse.Content(
+                WSActionResponse.Type.SHOW_NOTIFICATION,
+                mapper.toTree(Notification("$playerName trashed a tech"))
+              )
             )
-        )
+          )
+        }
 
         return WSActionResponse(messages)
     }
@@ -2065,6 +2070,14 @@ class GameService {
                 "Piter De Vries" -> {
                     player.private.intrigueCards.add(game.twistedIntrigueCards.draw())
                 }
+              "Shaddam Corrino" -> {
+                listOf("contracts/contract_1.png", "contracts/contract_22.png")
+                  .mapNotNull { id ->
+                  game.contracts.getAndRemove { contr -> contr.url.contains(id) }
+                }
+                  .map { contr -> player.contracts.add(Contract(contr.url)) }
+
+              }
             }
         }
 
