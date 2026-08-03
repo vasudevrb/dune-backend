@@ -1,6 +1,7 @@
 package com.vasurb.model
 
 import com.vasurb.model.CharacterSource.BLOODLINES
+import com.vasurb.model.CharacterSource.CONSPIRACY
 import com.vasurb.model.CharacterSource.OUT
 import com.vasurb.model.CharacterSource.UPRISING
 
@@ -37,13 +38,18 @@ enum class PlayableCharacter(
   LETO_ATREIDES("Leto Atreides", Tier.C, BLOODLINES),
   MUAD_DIB("Muad'Dib", Tier.C),
 
+  SCYTALE("Scytale", Tier.A, CONSPIRACY),
+  HAYT("Hayt", Tier.A, CONSPIRACY),
+  COUNT_GORLU_SYNOCHE("Count Gorlu Synoche", Tier.A, CONSPIRACY),
+  ALIA_ATREIDES("Alia Atreides", Tier.A, CONSPIRACY),
+
   ARMAND_ECAZ("Armend Ecaz", Tier.C, OUT),
   HELENA_RICHESE("Helena Richese", Tier.C, OUT),
   GLOSSU_RABBAN("Glossu Rabban", Tier.A, OUT),
 }
 
 enum class CharacterSource {
-    UPRISING, IMPERIUM, BLOODLINES, OUT
+    UPRISING, IMPERIUM, BLOODLINES, CONSPIRACY, OUT
 }
 
 enum class Tier {

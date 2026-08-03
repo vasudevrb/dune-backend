@@ -54,6 +54,10 @@ class CharacterUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Co
             PAUL_ATREIDES -> listOf("paul_atreides")
             VLADIMIR_HARKONNEN -> listOf("vladimir_harkonnen")
             YUNA_MORITANI -> listOf("yuna_moritani")
+            ALIA_ATREIDES -> listOf("alia_atreides")
+            HAYT -> listOf("hayt")
+            SCYTALE -> listOf("scytale")
+            COUNT_GORLU_SYNOCHE -> listOf("count_gorlu_synoche")
         }
 
         return fileNames.map { name ->
@@ -91,6 +95,10 @@ class CharacterUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Co
             PAUL_ATREIDES -> ("paul_atreides")
             VLADIMIR_HARKONNEN -> ("vladimir_harkonnen")
             YUNA_MORITANI -> ("yuna_moritani")
+            ALIA_ATREIDES -> ("alia_atreides")
+            HAYT -> ("hayt")
+            SCYTALE -> ("scytale")
+            COUNT_GORLU_SYNOCHE -> ("count_gorlu_synoche")
         }
 
         return serverUrl + "/avatars/${fileName}.jpg"
