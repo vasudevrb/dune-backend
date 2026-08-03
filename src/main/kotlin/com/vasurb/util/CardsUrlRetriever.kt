@@ -79,6 +79,7 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
     fun getDirectory(cardType: Card.Type, source: Card.Source): String {
         return when (cardType) {
             IMPERIUM if source == BLOODLINES -> "imperium_cards/bloodlines"
+            IMPERIUM if source == CONSPIRACY -> "imperium_cards/conspiracy"
             IMPERIUM -> "imperium_cards"
             INTRIGUE if source == BLOODLINES -> "intrigue_cards/bloodlines"
             INTRIGUE -> "intrigue_cards"
