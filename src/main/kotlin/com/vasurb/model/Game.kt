@@ -62,7 +62,10 @@ data class Game(
     var nextConflictLevel: Int = conflictCards.peek()?.conflictType?.level ?: 3
 
     var currentContracts = contracts.draw(2).map { it.url }.toMutableList() as ArrayList<String>
-    var currentRaids = arrayListOf(smallRaids.draw(), largeRaids.draw())
+    var currentRaids = if (allowedSources.contains(Card.Source.CONSPIRACY)) arrayListOf(
+        smallRaids.draw(),
+        largeRaids.draw()
+    ).toMutableList() else arrayListOf()
 
     val imperiumRow: ArrayList<ImperiumCard> = imperiumCards.draw(5)
     var reserveRow: ArrayList<ReserveCard> = refreshReserveRow()
@@ -83,7 +86,13 @@ data class Game(
     }
 
     @JsonIgnore
-    val availableCharacters = PlayableCharacter
+    val availableCharacters = if (allowedSources.contains(Card.Source.CONSPIRACY))
+        PlayableCharacter
+            .entries
+            .filter { it.characterSource == CharacterSource.CONSPIRACY }
+            .toMutableList()
+    else
+        PlayableCharacter
         .entries
         .filter { allowedCharacterSources.contains(it.characterSource) }
         .filterIf(allowedCharacterSources.contains(CharacterSource.BLOODLINES)) { it.tier == tier }

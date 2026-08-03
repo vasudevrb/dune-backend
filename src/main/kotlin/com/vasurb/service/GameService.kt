@@ -6,6 +6,7 @@ import com.vasurb.api.model.ws_request.*
 import com.vasurb.exception.ExpiredGameException
 import com.vasurb.model.*
 import com.vasurb.model.Card.Source.BLOODLINES
+import com.vasurb.model.Card.Source.CONSPIRACY
 import com.vasurb.model.Card.Source.UPRISING
 import com.vasurb.model.Objective.*
 import com.vasurb.util.Util.dec
@@ -2000,13 +2001,107 @@ class GameService {
         return WSActionResponse(messages)
     }
 
+    fun commitRaid(playerName: String, gameId: String, action: WSActionRequest): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<CommitRaidAction>(action.body)
+
+        val raidIndex = game.currentRaids.indexOfFirst { it.url == action.url }
+        if (raidIndex != -1) {
+            val raids = player.raids
+            raids.add(Raid(action.url, if (raidIndex == 0) "small" else "large"))
+            game.currentRaids.removeAt(raidIndex)
+
+            val newRaid = if (raidIndex == 0) game.smallRaids.draw() else game.largeRaids.draw()
+            game.currentRaids.add(raidIndex, newRaid)
+        }
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName committed a raid"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
+
+    fun repeatRaid(playerName: String, gameId: String, action: WSActionRequest): WSActionResponse {
+        val game = getGame(gameId)
+        val player = getPlayer(gameId, playerName)
+        val action = mapper.getAs<RepeatRaidAction>(action.body)
+
+        val raid = player.raids.find { it.url == action.url }
+        raid?.repeated = action.repeated
+
+        val messages = arrayListOf<WSActionResponse.Message>()
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayers,
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_GAME, mapper.toTree(game))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.SinglePlayer(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player, includePrivate = true))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(WSActionResponse.Type.UPDATE_PLAYER, mapper.toTree(player))
+            )
+        )
+
+        messages.add(
+            WSActionResponse.Message(
+                WSActionResponse.AllPlayersExcept(playerName),
+                WSActionResponse.Content(
+                    WSActionResponse.Type.SHOW_NOTIFICATION,
+                    mapper.toTree(Notification("$playerName repeated a raid"))
+                )
+            )
+        )
+
+        return WSActionResponse(messages)
+    }
 
 
-    fun createGame(playerName: String, includeRivals: Boolean, includeBloodlines: Boolean, includeAtomics: Boolean): Game {
+
+    fun createGame(playerName: String, includeRivals: Boolean, includeBloodlines: Boolean, includeConspiracy: Boolean, includeAtomics: Boolean): Game {
         val gameId = "dune${games.size + 1}"
 
         val sources = arrayListOf(UPRISING)
         if (includeBloodlines) sources.add(BLOODLINES)
+        if (includeConspiracy) sources.add(CONSPIRACY)
 
         val game = Game(gameId, Tier.entries.toTypedArray().random(), sources)
         println("$gameId imperium deck: ${game.imperiumRow.map { it.url }}")
