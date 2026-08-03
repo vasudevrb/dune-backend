@@ -38,6 +38,12 @@ data class Game(
     val contracts: Deck<ContractCard> = Deck(ContractCard.All().get(allowedSources))
 
     @JsonIgnore
+    val largeRaids: Deck<RaidToken> = Deck(RaidToken.All().get(allowedSources, RaidToken.RaidType.LARGE))
+
+    @JsonIgnore
+    val smallRaids: Deck<RaidToken> = Deck(RaidToken.All().get(allowedSources, RaidToken.RaidType.SMALL))
+
+    @JsonIgnore
     val techs: Deck<TechTile> = Deck(TechTile.All().get())
 
     @JsonIgnore
@@ -56,6 +62,7 @@ data class Game(
     var nextConflictLevel: Int = conflictCards.peek()?.conflictType?.level ?: 3
 
     var currentContracts = contracts.draw(2).map { it.url }.toMutableList() as ArrayList<String>
+    var currentRaids = arrayListOf(smallRaids.draw(), largeRaids.draw())
 
     val imperiumRow: ArrayList<ImperiumCard> = imperiumCards.draw(5)
     var reserveRow: ArrayList<ReserveCard> = refreshReserveRow()

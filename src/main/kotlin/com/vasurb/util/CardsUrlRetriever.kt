@@ -4,6 +4,7 @@ import com.vasurb.model.Card
 import com.vasurb.model.Card.Source.*
 import com.vasurb.model.Card.Type.*
 import com.vasurb.model.ConflictCard.ConflictType
+import com.vasurb.model.RaidToken
 import com.vasurb.model.ReserveCard
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
@@ -28,6 +29,11 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
         val level: ConflictType
     )
 
+    data class RaidKey(
+        val source: Card.Source,
+        val type: RaidToken.RaidType
+    )
+
     override fun run(vararg args: String?) {
         val resolver = PathMatchingResourcePatternResolver()
 
@@ -48,6 +54,12 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
                 } else if (cardType == TWISTED_INTRIGUE) {
                     Card.Source.entries
                         .map { source -> cardImageUrls[Key(cardType, source)] = getUrls(getDirectory(cardType, BLOODLINES), resolver) }
+                } else if (cardType == RAID) {
+                    RaidToken.RaidType.entries
+                        .map { raidType ->
+                            cardImageUrls[RaidKey(CONSPIRACY, raidType)] = getUrls(getRaidDirectory(raidType), resolver)
+                        }
+
                 } else {
                     Card.Source.entries
                         .map { source -> cardImageUrls[Key(cardType, source)] = getUrls(getDirectory(cardType, source), resolver) }
@@ -82,6 +94,13 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
         }
     }
 
+    fun getRaidDirectory(raidType: RaidToken.RaidType): String {
+        return when (raidType) {
+            RaidToken.RaidType.LARGE -> "raid_tokens/large"
+            else -> "raid_tokens/small"
+        }
+    }
+
     fun getConflictDirectory(source: Card.Source, conflictType: ConflictType): String {
         return when (conflictType) {
             ConflictType.LEVEL_1 if source == BLOODLINES -> "conflict_cards/bloodlines/level_1"
@@ -108,6 +127,10 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
             }
 
             return cardImageUrls[Key(cardType, source)] ?: emptyList()
+        }
+
+        fun getRaidTokenImageUrls(source: Card.Source, type: RaidToken.RaidType): List<String> {
+            return cardImageUrls[RaidKey(source, type)] ?: emptyList()
         }
 
         fun getConflictImageUrls(source: Card.Source, level: ConflictType): List<String> {
