@@ -4,6 +4,7 @@ import com.vasurb.model.Card
 import com.vasurb.model.Card.Source.*
 import com.vasurb.model.Card.Type.*
 import com.vasurb.model.ConflictCard.ConflictType
+import com.vasurb.model.RaidToken
 import com.vasurb.model.ReserveCard
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
@@ -28,6 +29,11 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
         val level: ConflictType
     )
 
+    data class RaidKey(
+        val source: Card.Source,
+        val type: RaidToken.RaidType
+    )
+
     override fun run(vararg args: String?) {
         val resolver = PathMatchingResourcePatternResolver()
 
@@ -48,6 +54,12 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
                 } else if (cardType == TWISTED_INTRIGUE) {
                     Card.Source.entries
                         .map { source -> cardImageUrls[Key(cardType, source)] = getUrls(getDirectory(cardType, BLOODLINES), resolver) }
+                } else if (cardType == RAID) {
+                    RaidToken.RaidType.entries
+                        .map { raidType ->
+                            cardImageUrls[RaidKey(CONSPIRACY, raidType)] = getUrls(getRaidDirectory(raidType), resolver)
+                        }
+
                 } else {
                     Card.Source.entries
                         .map { source -> cardImageUrls[Key(cardType, source)] = getUrls(getDirectory(cardType, source), resolver) }
@@ -67,6 +79,7 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
     fun getDirectory(cardType: Card.Type, source: Card.Source): String {
         return when (cardType) {
             IMPERIUM if source == BLOODLINES -> "imperium_cards/bloodlines"
+            IMPERIUM if source == CONSPIRACY -> "imperium_cards/conspiracy"
             IMPERIUM -> "imperium_cards"
             INTRIGUE if source == BLOODLINES -> "intrigue_cards/bloodlines"
             INTRIGUE -> "intrigue_cards"
@@ -79,6 +92,13 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
             NAVIGATION -> "navigation_cards"
             TWISTED_INTRIGUE if source == BLOODLINES -> "twisted_intrigue_cards"
             else -> "no_op"
+        }
+    }
+
+    fun getRaidDirectory(raidType: RaidToken.RaidType): String {
+        return when (raidType) {
+            RaidToken.RaidType.LARGE -> "raid_tokens/large"
+            else -> "raid_tokens/small"
         }
     }
 
@@ -108,6 +128,10 @@ class CardsUrlRetriever(@Value("\${server_url}") val serverUrl: String) : Comman
             }
 
             return cardImageUrls[Key(cardType, source)] ?: emptyList()
+        }
+
+        fun getRaidTokenImageUrls(source: Card.Source, type: RaidToken.RaidType): List<String> {
+            return cardImageUrls[RaidKey(source, type)] ?: emptyList()
         }
 
         fun getConflictImageUrls(source: Card.Source, level: ConflictType): List<String> {

@@ -138,6 +138,15 @@ data class RevealNavigationCardAction(
     val revealed: Boolean
 )
 
+data class CommitRaidAction(
+    val url: String
+)
+
+data class RepeatRaidAction(
+    val url: String,
+    val repeated: Boolean
+)
+
 data class CardAction(
     val url: String,
     val source: Card.SourceDeck

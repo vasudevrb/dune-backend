@@ -45,6 +45,8 @@ data class Player(
     )
     var factionAlliances: ArrayList<Faction> = arrayListOf()
 
+    var raids: ArrayList<Raid> = arrayListOf()
+
     var swordmasterUnlocked: Boolean = false
     var hasAtomicsToken: Boolean = true
     var makerHookUnlocked: Boolean = false
