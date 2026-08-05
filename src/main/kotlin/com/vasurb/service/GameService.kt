@@ -1164,6 +1164,12 @@ class GameService {
                 it.private.intrigueCards.add(game.twistedIntrigueCards.draw())
             }
 
+            if (it.character?.name == "Alia Atreides" && it.combat.troopsInSupply > 0) {
+                it.combat.troopsInCombat = 1
+                it.combat.troopsInSupply -= 1
+                it.combat.strength = 2
+            }
+
             it.techs.forEach { tt -> tt.flipped = false }
             it.private.discardedCards.addAll(it.private.inPlayCards)
             it.private.inPlayCards.clear()
@@ -2173,6 +2179,12 @@ class GameService {
                   .map { contr -> player.contracts.add(Contract(contr.url)) }
 
               }
+                "Alia Atreides" -> {
+                    player.combat.troopsInGarrison = 1
+                    player.combat.troopsInCombat = 1
+                    player.combat.troopsInSupply = 10
+                    player.combat.strength = 2
+                }
             }
         }
 
